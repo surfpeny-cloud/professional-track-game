@@ -151,3 +151,148 @@ const CAREER_LEVELS = {
 
 // Символы для кубика
 const DICE_SYMBOLS = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+
+// Магазин улучшений
+const SHOP_ITEMS = {
+    skills: {
+        name: "🎯 Навыки",
+        items: [
+            {
+                id: "extra_skill",
+                name: "Дополнительный навык",
+                description: "Откройте третий навык для большего выбора решений",
+                icon: "💡",
+                price: 8,
+                type: "permanent",
+                effect: "add_skill_slot",
+                maxLevel: 1,
+                featured: true
+            },
+            {
+                id: "skill_boost",
+                name: "Прокачка навыка",
+                description: "+1 к проверкам с выбранным навыком на 3 хода",
+                icon: "⚡",
+                price: 5,
+                type: "temporary",
+                effect: "skill_boost",
+                duration: 3,
+                featured: false
+            }
+        ]
+    },
+    dice: {
+        name: "🎲 Улучшения кубика",
+        items: [
+            {
+                id: "lucky_dice",
+                name: "Везучий кубик",
+                description: "Перебросьте кубик один раз за ход",
+                icon: "🍀",
+                price: 6,
+                type: "consumable",
+                effect: "reroll_dice",
+                uses: 1,
+                featured: true
+            },
+            {
+                id: "dice_boost",
+                name: "Улучшенный бросок",
+                description: "+1 к следующему броску кубика",
+                icon: "🎯",
+                price: 3,
+                type: "consumable",
+                effect: "dice_bonus",
+                bonus: 1,
+                uses: 1,
+                featured: false
+            },
+            {
+                id: "double_roll",
+                name: "Двойной бросок",
+                description: "Бросьте два кубика и выберите лучший результат",
+                icon: "🎲",
+                price: 10,
+                type: "consumable",
+                effect: "advantage_roll",
+                uses: 1,
+                featured: false
+            }
+        ]
+    },
+    reputation: {
+        name: "⭐ Репутация",
+        items: [
+            {
+                id: "reputation_boost",
+                name: "Буст репутации",
+                description: "Мгновенно получите +2 к репутации",
+                icon: "📈",
+                price: 7,
+                type: "instant",
+                effect: "add_reputation",
+                amount: 2,
+                featured: false
+            },
+            {
+                id: "reputation_multiplier",
+                name: "Множитель репутации",
+                description: "Удвойте репутацию за следующее задание",
+                icon: "✨",
+                price: 8,
+                type: "consumable",
+                effect: "reputation_multiplier",
+                multiplier: 2,
+                uses: 1,
+                featured: true
+            }
+        ]
+    },
+    special: {
+        name: "🚀 Особые умения",
+        items: [
+            {
+                id: "time_extend",
+                name: "Дополнительное время",
+                description: "+2 минуты на выполнение следующего задания",
+                icon: "⏰",
+                price: 4,
+                type: "consumable",
+                effect: "time_extension",
+                minutes: 2,
+                uses: 1,
+                featured: false
+            },
+            {
+                id: "skip_quest",
+                name: "Пропуск задания",
+                description: "Пропустите текущее задание без потерь",
+                icon: "🏃‍♂️",
+                price: 6,
+                type: "consumable",
+                effect: "skip_quest",
+                uses: 1,
+                featured: false
+            },
+            {
+                id: "inspiration",
+                name: "Источник вдохновения",
+                description: "Получите подсказку для выполнения задания",
+                icon: "💫",
+                price: 5,
+                type: "consumable",
+                effect: "get_hint",
+                uses: 1,
+                featured: false
+            }
+        ]
+    }
+};
+
+// Категории магазина
+const SHOP_CATEGORIES = [
+    { id: "skills", name: "🎯 Навыки", icon: "💡" },
+    { id: "dice", name: "🎲 Кубик", icon: "🎲" },
+    { id: "reputation", name: "⭐ Репутация", icon: "⭐" },
+    { id: "special", name: "🚀 Особые", icon: "🚀" }
+];
