@@ -472,6 +472,32 @@ body {
     font-size: 14px;
 }
 
+.player-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.shop-btn {
+    background: linear-gradient(45deg, #fd79a8, #e84393);
+    border: none;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.shop-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(253, 121, 168, 0.4);
+}
+
 .turn-indicator {
     display: flex;
     align-items: center;
@@ -697,7 +723,7 @@ body {
     font-size: 16px;
 }
 
-/* Продолжение в следующем сообщении... *//* Клетка */
+/* Клетка */
 .cell-section {
     background: var(--card-bg);
     padding: 20px;
@@ -958,178 +984,6 @@ body {
 .game-controls {
     text-align: center;
     margin-bottom: 20px;
-}
-
-/* Результаты */
-.results-section {
-    background: var(--card-bg);
-    padding: 30px 20px;
-    border-radius: var(--border-radius);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    text-align: center;
-}
-
-.results-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.trophy, .confetti {
-    font-size: 32px;
-    animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-.results-header h2 {
-    font-size: 24px;
-    font-weight: 700;
-    background: var(--primary-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.winner-card {
-    background: var(--warning-gradient);
-    padding: 25px;
-    border-radius: 15px;
-    margin-bottom: 25px;
-    box-shadow: 0 8px 32px rgba(253, 203, 110, 0.3);
-}
-
-.final-results {
-    margin-bottom: 25px;
-}
-
-/* Цветовые схемы для клеток */
-.cell-green { 
-    background: linear-gradient(45deg, rgba(0, 184, 148, 0.2), rgba(0, 160, 133, 0.1));
-    border: 2px solid #00b894;
-}
-.cell-blue { 
-    background: linear-gradient(45deg, rgba(116, 185, 255, 0.2), rgba(9, 132, 227, 0.1));
-    border: 2px solid #74b9ff;
-}
-.cell-yellow { 
-    background: linear-gradient(45deg, rgba(253, 203, 110, 0.2), rgba(243, 156, 18, 0.1));
-    border: 2px solid #fdcb6e;
-}
-.cell-purple { 
-    background: linear-gradient(45deg, rgba(108, 92, 231, 0.2), rgba(162, 155, 254, 0.1));
-    border: 2px solid #6c5ce7;
-}
-
-.cell-green .cell-icon { background: rgba(0, 184, 148, 0.3); }
-.cell-blue .cell-icon { background: rgba(116, 185, 255, 0.3); }
-.cell-yellow .cell-icon { background: rgba(253, 203, 110, 0.3); }
-.cell-purple .cell-icon { background: rgba(108, 92, 231, 0.3); }
-
-.history-item.red { border-left-color: #ff6b6b; }
-.history-item.blue { border-left-color: #74b9ff; }
-.history-item.green { border-left-color: #00b894; }
-.history-item.yellow { border-left-color: #fdcb6e; }
-.history-item.purple { border-left-color: #6c5ce7; }
-.history-item.orange { border-left-color: #fd9644; }
-
-.difficulty-easy { color: #00b894; }
-.difficulty-medium { color: #fdcb6e; }
-.difficulty-hard { color: #ff7675; }
-.difficulty-epic { color: #6c5ce7; }
-
-/* Анимации */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.fade-in {
-    animation: fadeIn 0.5s ease-out;
-}
-
-.hidden {
-    display: none;
-}
-
-/* Полоса прокрутки */
-::-webkit-scrollbar {
-    width: 6px;
-}
-
-::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.5);
-}
-
-/* Адаптивность */
-@media (max-width: 380px) {
-    .app {
-        padding: 5px;
-    }
-    
-    .header h1 {
-        font-size: 20px;
-    }
-    
-    .input-group {
-        grid-template-columns: 1fr;
-    }
-    
-    .status-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .completion-buttons {
-        grid-template-columns: 1fr;
-    }
-    
-    .table-header, .table-row {
-        grid-template-columns: 25px 1fr 70px 60px;
-        gap: 8px;
-        font-size: 12px;
-    }
-}
-
-/* Стили для магазина */
-.player-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.shop-btn {
-    background: linear-gradient(45deg, #fd79a8, #e84393);
-    border: none;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-}
-
-.shop-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(253, 121, 168, 0.4);
 }
 
 /* Магазин */
@@ -1536,7 +1390,99 @@ body {
     gap: 10px;
 }
 
-/* Анимации для покупок */
+/* Результаты */
+.results-section {
+    background: var(--card-bg);
+    padding: 30px 20px;
+    border-radius: var(--border-radius);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    text-align: center;
+}
+
+.results-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.trophy, .confetti {
+    font-size: 32px;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.results-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.winner-card {
+    background: var(--warning-gradient);
+    padding: 25px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 32px rgba(253, 203, 110, 0.3);
+}
+
+.final-results {
+    margin-bottom: 25px;
+}
+
+/* Цветовые схемы для клеток */
+.cell-green { 
+    background: linear-gradient(45deg, rgba(0, 184, 148, 0.2), rgba(0, 160, 133, 0.1));
+    border: 2px solid #00b894;
+}
+.cell-blue { 
+    background: linear-gradient(45deg, rgba(116, 185, 255, 0.2), rgba(9, 132, 227, 0.1));
+    border: 2px solid #74b9ff;
+}
+.cell-yellow { 
+    background: linear-gradient(45deg, rgba(253, 203, 110, 0.2), rgba(243, 156, 18, 0.1));
+    border: 2px solid #fdcb6e;
+}
+.cell-purple { 
+    background: linear-gradient(45deg, rgba(108, 92, 231, 0.2), rgba(162, 155, 254, 0.1));
+    border: 2px solid #6c5ce7;
+}
+
+.cell-green .cell-icon { background: rgba(0, 184, 148, 0.3); }
+.cell-blue .cell-icon { background: rgba(116, 185, 255, 0.3); }
+.cell-yellow .cell-icon { background: rgba(253, 203, 110, 0.3); }
+.cell-purple .cell-icon { background: rgba(108, 92, 231, 0.3); }
+
+.history-item.red { border-left-color: #ff6b6b; }
+.history-item.blue { border-left-color: #74b9ff; }
+.history-item.green { border-left-color: #00b894; }
+.history-item.yellow { border-left-color: #fdcb6e; }
+.history-item.purple { border-left-color: #6c5ce7; }
+.history-item.orange { border-left-color: #fd9644; }
+
+.difficulty-easy { color: #00b894; }
+.difficulty-medium { color: #fdcb6e; }
+.difficulty-hard { color: #ff7675; }
+.difficulty-epic { color: #6c5ce7; }
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
 @keyframes purchaseSuccess {
     0% { transform: scale(1); }
     50% { transform: scale(1.1); }
@@ -1547,8 +1493,62 @@ body {
     animation: purchaseSuccess 0.6s ease;
 }
 
-/* Адаптивность магазина */
+.hidden {
+    display: none;
+}
+
+.current-turn {
+    background: rgba(108, 92, 231, 0.3) !important;
+    border: 2px solid #6c5ce7;
+}
+
+/* Полоса прокрутки */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Адаптивность */
 @media (max-width: 380px) {
+    .app {
+        padding: 5px;
+    }
+    
+    .header h1 {
+        font-size: 20px;
+    }
+    
+    .input-group {
+        grid-template-columns: 1fr;
+    }
+    
+    .status-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .completion-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .table-header, .table-row {
+        grid-template-columns: 25px 1fr 70px 60px;
+        gap: 8px;
+        font-size: 12px;
+    }
+    
     .shop-container {
         padding: 15px;
     }
