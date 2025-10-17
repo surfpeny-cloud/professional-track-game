@@ -13,68 +13,75 @@
         <div class="header">
             <h1>🎯 Профессиональный трек</h1>
             <div class="subtitle">Маршрут Успеха</div>
-            <div class="current-step" id="currentStep">Создайте персонажа для начала игры</div>
+            <div class="current-step" id="currentStep">Добавьте игроков для начала игры</div>
         </div>
 
-        <!-- Создание персонажа -->
-        <div class="character-section" id="characterSection">
-            <div class="character-form">
-                <h3>👤 Создание персонажа</h3>
+        <!-- Настройка игры -->
+        <div class="setup-section" id="setupSection">
+            <div class="setup-form">
+                <h3>👥 Настройка игры</h3>
                 
                 <div class="form-group">
-                    <label>Стартовые навыки (выберите 2):</label>
-                    <div class="skills-grid" id="skillsGrid">
-                        <!-- Навыки будут добавлены через JavaScript -->
+                    <label>Добавьте игроков (2-6 человек):</label>
+                    <div class="players-list" id="playersList">
+                        <!-- Игроки будут добавляться динамически -->
+                    </div>
+                    <div class="add-player-form">
+                        <input type="text" id="playerNameInput" placeholder="Имя игрока" maxlength="20" class="player-input">
+                        <select id="playerColorSelect" class="color-select">
+                            <option value="red">🔴 Красный</option>
+                            <option value="blue">🔵 Синий</option>
+                            <option value="green">🟢 Зеленый</option>
+                            <option value="yellow">🟡 Желтый</option>
+                            <option value="purple">🟣 Фиолетовый</option>
+                            <option value="orange">🟠 Оранжевый</option>
+                        </select>
+                        <button id="addPlayerBtn" class="add-btn">➕ Добавить</button>
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label>Профессиональный интерес:</label>
-                    <select id="professionSelect" class="profession-select">
-                        <option value="">Выберите направление</option>
-                        <option value="it">IT-сфера</option>
-                        <option value="design">Дизайн и креатив</option>
-                        <option value="business">Бизнес и менеджмент</option>
-                        <option value="science">Наука и исследования</option>
-                        <option value="education">Образование и развитие</option>
-                    </select>
+                <div class="game-info">
+                    <h4>🎮 Инструкция для ведущего:</h4>
+                    <ul>
+                        <li>Добавьте всех игроков через эту форму</li>
+                        <li>Используйте физическое игровое поле</li>
+                        <li>Передавайте устройство текущему игроку</li>
+                        <li>Следите за перемещением фишек на реальном поле</li>
+                    </ul>
                 </div>
 
-                <div class="form-group">
-                    <label>Личный ресурс (1 использование за игру):</label>
-                    <select id="resourceSelect" class="resource-select">
-                        <option value="">Выберите ресурс</option>
-                        <option value="listen">Умение слушать</option>
-                        <option value="adapt">Адаптивность</option>
-                        <option value="empathy">Эмпатия</option>
-                        <option value="persuade">Убеждение</option>
-                    </select>
-                </div>
-
-                <button id="createCharacterBtn" class="create-btn">🎮 Начать карьеру</button>
+                <button id="startGameBtn" class="start-btn" disabled>🎮 Начать игру</button>
             </div>
         </div>
 
         <!-- Игровой интерфейс -->
         <div class="game-interface" id="gameInterface" style="display: none;">
-            <!-- Профиль игрока -->
-            <div class="player-profile">
-                <div class="profile-info">
-                    <div class="player-name" id="playerName">Специалист</div>
-                    <div class="player-stats">
-                        <div class="stat">
-                            <span class="stat-label">Репутация:</span>
-                            <span class="stat-value" id="reputation">3</span>
-                        </div>
-                        <div class="stat">
-                            <span class="stat-label">Уровень:</span>
-                            <span class="stat-value" id="playerLevel">Стажер</span>
+            <!-- Текущий игрок -->
+            <div class="current-player-section">
+                <div class="current-player-card" id="currentPlayerCard">
+                    <div class="player-avatar" id="currentPlayerAvatar">👤</div>
+                    <div class="player-info">
+                        <div class="player-name" id="currentPlayerName">Игрок</div>
+                        <div class="player-stats">
+                            <span class="stat">Репутация: <span id="currentPlayerReputation">3</span></span>
+                            <span class="stat">Уровень: <span id="currentPlayerLevel">Стажер</span></span>
                         </div>
                     </div>
                 </div>
-                <div class="player-skills" id="playerSkills">
-                    <!-- Навыки игрока -->
+                <div class="turn-indicator" id="turnIndicator">Ваш ход!</div>
+            </div>
+
+            <!-- Статус игры -->
+            <div class="game-status">
+                <div class="status-item">
+                    <span class="status-label">Текущий ход:</span>
+                    <span class="status-value" id="currentTurn">1</span>
                 </div>
+                <div class="status-item">
+                    <span class="status-label">Всего игроков:</span>
+                    <span class="status-value" id="totalPlayers">0</span>
+                </div>
+                <button id="nextPlayerBtn" class="next-btn">⏭️ Следующий игрок</button>
             </div>
 
             <!-- Улучшенный кубик -->
@@ -99,13 +106,9 @@
                     <div class="cell-info">
                         <div class="cell-type" id="cellType">Тип задания</div>
                         <div class="cell-description" id="cellDescription">Бросьте кубик для определения типа задания</div>
+                        <div class="cell-position" id="cellPosition">Позиция: -</div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Кнопка получения задания -->
-            <div class="action-section">
-                <button id="getQuestBtn" class="quest-btn" disabled>📜 Получить задание</button>
             </div>
 
             <!-- Профессиональное задание -->
@@ -114,7 +117,7 @@
                     <h3>💼 Профессиональный вызов</h3>
                     <div class="quest-difficulty" id="questDifficulty">Сложность: -</div>
                 </div>
-                <div class="quest" id="currentQuest">Сначала определите тип задания!</div>
+                <div class="quest" id="currentQuest">Бросьте кубик для получения задания!</div>
                 
                 <div class="quest-instructions">
                     <h4>🎯 Варианты решения:</h4>
@@ -133,10 +136,37 @@
                 </div>
             </div>
 
+            <!-- Таблица игроков -->
+            <div class="players-table-section">
+                <h3>📊 Таблица игроков</h3>
+                <div class="players-table" id="playersTable">
+                    <!-- Таблица будет заполнена через JavaScript -->
+                </div>
+            </div>
+
             <!-- История -->
             <div class="history-section">
-                <h3>📈 История карьеры</h3>
+                <h3>📈 История игры</h3>
                 <div class="history" id="history"></div>
+            </div>
+
+            <!-- Кнопка завершения игры -->
+            <div class="game-controls">
+                <button id="endGameBtn" class="end-btn">🏁 Завершить игру</button>
+            </div>
+        </div>
+
+        <!-- Экран завершения игры -->
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <div class="results-container">
+                <h2>🏆 Игра завершена!</h2>
+                <div class="winner-card" id="winnerCard">
+                    <!-- Победитель будет показан здесь -->
+                </div>
+                <div class="final-results" id="finalResults">
+                    <!-- Финальные результаты -->
+                </div>
+                <button id="newGameBtn" class="new-game-btn">🔄 Новая игра</button>
             </div>
         </div>
     </div>
