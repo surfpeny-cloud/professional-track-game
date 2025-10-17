@@ -8,6 +8,7 @@ class ProfessionalTrackGame {
         this.gameHistory = [];
         this.gameActive = false;
         this.usedColors = new Set();
+        this.shop = new Shop(this);
         
         this.init();
     }
@@ -27,6 +28,8 @@ class ProfessionalTrackGame {
         document.getElementById('nextPlayerBtn').addEventListener('click', () => this.nextPlayer());
         document.getElementById('endGameBtn').addEventListener('click', () => this.endGame());
         document.getElementById('newGameBtn').addEventListener('click', () => this.newGame());
+        document.getElementById('shopBtn').addEventListener('click', () => this.openShop());
+        document.getElementById('closeShopBtn').addEventListener('click', () => this.closeShop());
 
         // Enter для добавления игрока
         document.getElementById('playerNameInput').addEventListener('keypress', (e) => {
@@ -69,7 +72,8 @@ class ProfessionalTrackGame {
             reputation: 3,
             careerLevel: 'intern',
             skills: this.generateRandomSkills(),
-            usedResource: false
+            usedResource: false,
+            inventory: []
         };
         
         this.players.push(player);
@@ -219,11 +223,6 @@ class ProfessionalTrackGame {
         
         this.updateCurrentStep(`Ход ${this.currentTurn}. ${currentPlayer.name}, бросьте кубик!`);
     }
-
-    // Остальные методы остаются такими же как в предыдущей версии...
-    // (hideDiceDots, createDiceDots, rollDice, finishRoll, getQuestForRoll, showQuest, displayQuest, 
-    // getCellTypeName, getCellTypeDescription, completeQuest, checkLevelUp, nextPlayer, updatePlayersTable,
-    // addToHistory, endGame, showResults, newGame, updateCurrentStep, showWelcomeState, resetQuestDisplay)
 
     hideDiceDots() {
         const diceDots = document.getElementById('diceDots');
@@ -423,6 +422,15 @@ class ProfessionalTrackGame {
                 reputationChange = 1;
                 message = "Хорошая работа! Вы аргументировали решение и получили +1 Репутации!";
             }
+
+            // Применяем множители репутации из инвентаря
+            const multiplier = this.shop.getReputationMultiplier(currentPlayer);
+            if (multiplier > 1) {
+                const originalReputation = reputationChange;
+                reputationChange = Math.floor(reputationChange * multiplier);
+                message += ` Множитель x${multiplier}: +${reputationChange} вместо +${originalReputation}!`;
+                this.shop.consumeItem(currentPlayer, 'reputation_multiplier');
+            }
         } else {
             message = "Задание не выполнено. Попробуйте в следующий раз!";
         }
@@ -544,6 +552,15 @@ class ProfessionalTrackGame {
         }
     }
 
+    openShop() {
+        const currentPlayer = this.players[this.currentPlayerIndex];
+        this.shop.open(currentPlayer);
+    }
+
+    closeShop() {
+        this.shop.close();
+    }
+
     endGame() {
         this.gameActive = false;
         
@@ -647,103 +664,6 @@ class ProfessionalTrackGame {
         rewardsElement.innerHTML = '<div class="empty-reward">-</div>';
         difficultyElement.querySelector('.difficulty-text').textContent = "Сложность: -";
     }
-}
-
-// Создаем глобальную переменную для доступа к методам из HTML
-const game = new ProfessionalTrackGame();
-
-class ProfessionalTrackGame {
-    constructor() {
-        this.players = [];
-        this.currentPlayerIndex = 0;
-        this.currentTurn = 1;
-        this.currentQuest = null;
-        this.isRolling = false;
-        this.gameHistory = [];
-        this.gameActive = false;
-        this.usedColors = new Set();
-        this.shop = new Shop(this);
-        
-        this.init();
-    }
-
-    init() {
-        // ... (предыдущий код инициализации)
-
-        // Добавляем обработчики для магазина
-        document.getElementById('shopBtn').addEventListener('click', () => this.openShop());
-        document.getElementById('closeShopBtn').addEventListener('click', () => this.closeShop());
-
-        this.showWelcomeState();
-    }
-
-    openShop() {
-        const currentPlayer = this.players[this.currentPlayerIndex];
-        this.shop.open(currentPlayer);
-    }
-
-    closeShop() {
-        this.shop.close();
-    }
-
-    // ... (остальные методы без изменений)
-
-    completeQuest(success) {
-        if (!this.currentQuest) return;
-        
-        const currentPlayer = this.players[this.currentPlayerIndex];
-        let reputationChange = 0;
-        let message = "";
-        
-        if (success) {
-            // Проверяем наличие нужных навыков
-            const hasRequiredSkill = this.currentQuest.requiredSkills.some(skill => 
-                currentPlayer.skills.includes(skill)
-            );
-            
-            if (hasRequiredSkill) {
-                reputationChange = 2;
-                message = "Отлично! Вы использовали свой навык и получили +2 Репутации!";
-            } else {
-                reputationChange = 1;
-                message = "Хорошая работа! Вы аргументировали решение и получили +1 Репутации!";
-            }
-
-            // Применяем множители репутации из инвентаря
-            const multiplier = this.shop.getReputationMultiplier(currentPlayer);
-            if (multiplier > 1) {
-                const originalReputation = reputationChange;
-                reputationChange = Math.floor(reputationChange * multiplier);
-                message += ` Множитель x${multiplier}: +${reputationChange} вместо +${originalReputation}!`;
-                this.shop.consumeItem(currentPlayer, 'reputation_multiplier');
-            }
-        } else {
-            message = "Задание не выполнено. Попробуйте в следующий раз!";
-        }
-        
-        // Обновляем репутацию игрока
-        currentPlayer.reputation += reputationChange;
-        
-        // Проверяем повышение уровня
-        this.checkLevelUp(currentPlayer);
-        
-        // Добавляем в историю
-        this.addToHistory(currentPlayer, success, reputationChange);
-        
-        // Обновляем интерфейс
-        this.updatePlayersTable();
-        this.updateCurrentPlayer();
-        
-        // Показываем сообщение о результате
-        this.showMessage(message, success ? 'success' : 'info');
-        
-        // Автоматически переходим к следующему игроку через 2 секунды
-        setTimeout(() => {
-            this.nextPlayer();
-        }, 2000);
-    }
-
-    // ... (остальные методы)
 }
 
 class Shop {
@@ -1001,110 +921,209 @@ class Shop {
     }
 
     buyItem(item) {
-        if (this.currentPlayer.reputation < item.price) {
-            this.game.showMessage('Недостаточно репутации!', 'warning');
+    if (this.currentPlayer.reputation < item.price) {
+        this.game.showMessage('Недостаточно репутации!', 'warning');
+        return;
+    }
+
+    // Проверяем, не куплен ли уже перманентный предмет
+    if (item.type === 'permanent') {
+        const alreadyOwned = this.currentPlayer.inventory && 
+                           this.currentPlayer.inventory.find(invItem => invItem.id === item.id);
+        if (alreadyOwned) {
+            this.game.showMessage('Это улучшение уже куплено!', 'warning');
             return;
         }
+    }
 
-        // Проверяем, не куплен ли уже постоянный предмет
-        if (item.type === 'permanent') {
-            const alreadyOwned = this.currentPlayer.inventory && 
-                                this.currentPlayer.inventory.find(invItem => invItem.id === item.id);
-            if (alreadyOwned) {
-                this.game.showMessage('Это улучшение уже куплено!', 'warning');
-                return;
+    // Списываем стоимость
+    this.currentPlayer.reputation -= item.price;
+
+    // Добавляем предмет в инвентарь
+    if (!this.currentPlayer.inventory) {
+        this.currentPlayer.inventory = [];
+    }
+
+    const inventoryItem = {
+        id: item.id,
+        type: item.type,
+        uses: item.uses || 1,
+        duration: item.duration || 0,
+        active: true
+    };
+
+    // Для мгновенных предметов сразу применяем эффект
+    if (item.type === 'instant') {
+        this.applyItemEffect(item, inventoryItem);
+    } else {
+        this.currentPlayer.inventory.push(inventoryItem);
+        this.game.showMessage(`🎉 ${item.name} куплен!`, 'success');
+    }
+
+    // Обновляем отображение магазина
+    this.updateShopDisplay();
+    this.closeModal();
+
+    // Анимация успешной покупки
+    const shopItems = document.getElementById('shopItems');
+    shopItems.classList.add('purchase-success');
+    setTimeout(() => shopItems.classList.remove('purchase-success'), 600);
+}
+
+applyItemEffect(item, inventoryItem) {
+    switch (item.effect) {
+        case 'add_reputation':
+            this.currentPlayer.reputation += item.amount;
+            this.game.showMessage(`✨ +${item.amount} репутации!`, 'success');
+            break;
+            
+        case 'add_skill_slot':
+            // Добавляем дополнительный навык
+            const availableSkills = Object.keys(SKILLS).filter(skill => 
+                !this.currentPlayer.skills.includes(skill)
+            );
+            if (availableSkills.length > 0) {
+                const newSkill = availableSkills[0];
+                this.currentPlayer.skills.push(newSkill);
+                this.game.showMessage(`🎯 Новый навык: ${SKILLS[newSkill].name}!`, 'success');
             }
-        }
-
-        // Списание репутации
-        this.currentPlayer.reputation -= item.price;
-
-        // Добавление предмета в инвентарь
-        if (!this.currentPlayer.inventory) {
-            this.currentPlayer.inventory = [];
-        }
-
-        let inventoryItem;
-        if (item.type === 'consumable' || item.type === 'temporary') {
-            inventoryItem = {
-                id: item.id,
-                uses: item.uses || 1
-            };
-        } else if (item.type === 'permanent') {
-            inventoryItem = {
-                id: item.id,
-                active: true
-            };
-            // Применяем эффект постоянного предмета сразу
-            this.applyItemEffect(item);
-        } else if (item.type === 'instant') {
-            // Мгновенно применяем эффект
-            this.applyItemEffect(item);
-            inventoryItem = null;
-        }
-
-        if (inventoryItem) {
             this.currentPlayer.inventory.push(inventoryItem);
-        }
-
-        // Обновляем интерфейс
-        this.updateShopDisplay();
-        this.game.updateCurrentPlayer();
-        this.game.updatePlayersTable();
-
-        // Анимация успешной покупки
-        const boughtItem = document.querySelector(`[data-item-id="${item.id}"]`).closest('.shop-item');
-        boughtItem.classList.add('purchase-success');
-
-        this.game.showMessage(`Успешная покупка: ${item.name}!`, 'success');
-        
-        // Закрываем модальное окно если оно открыто
-        this.closeModal();
-    }
-
-    buyCurrentItem() {
-        if (this.currentItem) {
-            this.buyItem(this.currentItem);
-        }
-    }
-
-    applyItemEffect(item) {
-        switch (item.effect) {
-            case 'add_skill_slot':
-                // У игрока теперь может быть на 1 навык больше
-                this.game.showMessage('🎉 Теперь вы можете выбрать дополнительный навык!', 'success');
-                break;
-            case 'add_reputation':
-                this.currentPlayer.reputation += item.amount;
-                this.game.showMessage(`✨ Получено +${item.amount} репутации!`, 'success');
-                break;
-        }
-    }
-
-    consumeItem(player, itemId) {
-        const inventoryItem = player.inventory.find(item => item.id === itemId);
-        if (inventoryItem && inventoryItem.uses > 0) {
-            inventoryItem.uses--;
-            if (inventoryItem.uses <= 0) {
-                player.inventory = player.inventory.filter(item => item !== inventoryItem);
-            }
-        }
-    }
-
-    getReputationMultiplier(player) {
-        const multiplierItem = player.inventory?.find(item => item.id === 'reputation_multiplier' && item.uses > 0);
-        return multiplierItem ? SHOP_ITEMS.reputation.items.find(item => item.id === 'reputation_multiplier').multiplier : 1;
-    }
-
-    canRerollDice(player) {
-        const rerollItem = player.inventory?.find(item => item.id === 'lucky_dice' && item.uses > 0);
-        return !!rerollItem;
-    }
-
-    useRerollDice(player) {
-        this.consumeItem(player, 'lucky_dice');
+            break;
+            
+        default:
+            // Для остальных предметов просто добавляем в инвентарь
+            this.currentPlayer.inventory.push(inventoryItem);
+            this.game.showMessage(`🎉 ${item.name} куплен!`, 'success');
     }
 }
 
-// Создаем глобальную переменную для доступа к методам из HTML
-const game = new ProfessionalTrackGame();
+// Метод для использования предметов из инвентаря
+useItem(itemId, player) {
+    const inventoryItem = player.inventory.find(item => item.id === itemId);
+    if (!inventoryItem || inventoryItem.uses <= 0) return false;
+
+    const itemData = this.findItemData(itemId);
+    if (!itemData) return false;
+
+    // Применяем эффект
+    switch (itemData.effect) {
+        case 'reroll_dice':
+            if (this.game.isRolling) {
+                this.game.showMessage('Используйте предмет после броска!', 'warning');
+                return false;
+            }
+            inventoryItem.uses--;
+            this.game.showMessage('🎲 Переброс кубика активирован!', 'success');
+            return true;
+            
+        case 'dice_bonus':
+            inventoryItem.uses--;
+            this.game.showMessage(`🎯 +${itemData.bonus} к следующему броску!`, 'success');
+            return true;
+            
+        case 'skill_boost':
+            inventoryItem.uses--;
+            this.game.showMessage('⚡ Буст навыка активирован на 3 хода!', 'success');
+            return true;
+            
+        case 'skip_quest':
+            inventoryItem.uses--;
+            this.game.showMessage('🏃‍♂️ Задание пропущено!', 'success');
+            this.game.nextPlayer();
+            return true;
+            
+        default:
+            return false;
+    }
+}
+
+// Метод для получения множителя репутации
+getReputationMultiplier(player) {
+    const multiplierItem = player.inventory?.find(item => 
+        item.id === 'reputation_multiplier' && item.uses > 0
+    );
+    return multiplierItem ? 2 : 1;
+}
+
+// Метод для потребления предмета
+consumeItem(player, itemId) {
+    const itemIndex = player.inventory?.findIndex(item => 
+        item.id === itemId && item.uses > 0
+    );
+    
+    if (itemIndex > -1) {
+        player.inventory[itemIndex].uses--;
+        if (player.inventory[itemIndex].uses <= 0) {
+            player.inventory.splice(itemIndex, 1);
+        }
+        return true;
+    }
+    return false;
+}
+
+// Обновляем метод completeQuest в основном классе игры для учета предметов
+completeQuest(success) {
+    if (!this.currentQuest) return;
+    
+    const currentPlayer = this.players[this.currentPlayerIndex];
+    let reputationChange = 0;
+    let message = "";
+    
+    if (success) {
+        // Проверяем наличие нужных навыков
+        const hasRequiredSkill = this.currentQuest.requiredSkills.some(skill => 
+            currentPlayer.skills.includes(skill)
+        );
+        
+        if (hasRequiredSkill) {
+            reputationChange = 2;
+            message = "Отлично! Вы использовали свой навык и получили +2 Репутации!";
+        } else {
+            reputationChange = 1;
+            message = "Хорошая работа! Вы аргументировали решение и получили +1 Репутации!";
+        }
+
+        // Применяем множители репутации из инвентаря
+        const multiplier = this.shop.getReputationMultiplier(currentPlayer);
+        if (multiplier > 1) {
+            const originalReputation = reputationChange;
+            reputationChange = Math.floor(reputationChange * multiplier);
+            message += ` Множитель x${multiplier}: +${reputationChange} вместо +${originalReputation}!`;
+            this.shop.consumeItem(currentPlayer, 'reputation_multiplier');
+        }
+    } else {
+        message = "Задание не выполнено. Попробуйте в следующий раз!";
+    }
+    
+    // Обновляем репутацию игрока
+    currentPlayer.reputation += reputationChange;
+    
+    // Проверяем повышение уровня
+    this.checkLevelUp(currentPlayer);
+    
+    // Добавляем в историю
+    this.addToHistory(currentPlayer, success, reputationChange);
+    
+    // Обновляем интерфейс
+    this.updatePlayersTable();
+    this.updateCurrentPlayer();
+    
+    // Показываем сообщение о результате
+    this.showMessage(message, success ? 'success' : 'info');
+    
+    // Автоматически переходим к следующему игроку через 2 секунды
+    setTimeout(() => {
+        this.nextPlayer();
+    }, 2000);
+}
+}
+
+// Инициализация игры при загрузке страницы
+let game;
+
+document.addEventListener('DOMContentLoaded', function() {
+    game = new ProfessionalTrackGame();
+});
+
+// Добавляем глобальные функции для обработчиков событий в HTML
+window.game = game;
