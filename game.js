@@ -1,18 +1,13 @@
 class ProfessionalTrackGame {
     constructor() {
-        this.player = {
-            skills: [],
-            profession: null,
-            resource: null,
-            reputation: 3,
-            careerLevel: 'intern',
-            usedResource: false
-        };
-        this.currentCellType = null;
+        this.players = [];
+        this.currentPlayerIndex = 0;
+        this.currentTurn = 1;
         this.currentQuest = null;
         this.isRolling = false;
         this.gameHistory = [];
-        this.totalRolls = 0;
+        this.gameActive = false;
+        this.usedColors = new Set();
         
         this.init();
     }
@@ -23,105 +18,146 @@ class ProfessionalTrackGame {
         this.tg.expand();
         this.tg.enableClosingConfirmation();
 
-        // Инициализация навыков
-        this.initSkillsGrid();
-        
         // Назначение обработчиков событий
-        document.getElementById('createCharacterBtn').addEventListener('click', () => this.createCharacter());
+        document.getElementById('addPlayerBtn').addEventListener('click', () => this.addPlayer());
+        document.getElementById('startGameBtn').addEventListener('click', () => this.startGame());
         document.getElementById('rollBtn').addEventListener('click', () => this.rollDice());
-        document.getElementById('getQuestBtn').addEventListener('click', () => this.getQuest());
         document.getElementById('successBtn').addEventListener('click', () => this.completeQuest(true));
         document.getElementById('failBtn').addEventListener('click', () => this.completeQuest(false));
-        
+        document.getElementById('nextPlayerBtn').addEventListener('click', () => this.nextPlayer());
+        document.getElementById('endGameBtn').addEventListener('click', () => this.endGame());
+        document.getElementById('newGameBtn').addEventListener('click', () => this.newGame());
+
+        // Enter для добавления игрока
+        document.getElementById('playerNameInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.addPlayer();
+            }
+        });
+
         this.showWelcomeState();
     }
 
-    initSkillsGrid() {
-        const skillsGrid = document.getElementById('skillsGrid');
-        skillsGrid.innerHTML = '';
-
-        Object.entries(SKILLS).forEach(([id, skill]) => {
-            const skillElement = document.createElement('div');
-            skillElement.className = 'skill-option';
-            skillElement.textContent = skill.name;
-            skillElement.dataset.skillId = id;
-            
-            skillElement.addEventListener('click', () => this.toggleSkill(id, skillElement));
-            
-            skillsGrid.appendChild(skillElement);
-        });
-    }
-
-    toggleSkill(skillId, element) {
-        const index = this.player.skills.indexOf(skillId);
+    addPlayer() {
+        const nameInput = document.getElementById('playerNameInput');
+        const colorSelect = document.getElementById('playerColorSelect');
         
-        if (index > -1) {
-            // Удаляем навык
-            this.player.skills.splice(index, 1);
-            element.classList.remove('selected');
-        } else if (this.player.skills.length < 2) {
-            // Добавляем навык
-            this.player.skills.push(skillId);
-            element.classList.add('selected');
-        }
+        const name = nameInput.value.trim();
+        const color = colorSelect.value;
         
-        // Блокируем выбор если уже 2 навыка
-        this.updateSkillsAvailability();
-    }
-
-    updateSkillsAvailability() {
-        const skillOptions = document.querySelectorAll('.skill-option');
-        const maxSkillsSelected = this.player.skills.length >= 2;
-        
-        skillOptions.forEach(option => {
-            const isSelected = option.classList.contains('selected');
-            if (!isSelected && maxSkillsSelected) {
-                option.classList.add('disabled');
-            } else {
-                option.classList.remove('disabled');
-            }
-        });
-    }
-
-    createCharacter() {
-        const profession = document.getElementById('professionSelect').value;
-        const resource = document.getElementById('resourceSelect').value;
-        
-        if (this.player.skills.length !== 2 || !profession || !resource) {
-            alert('Пожалуйста, заполните все поля: выберите 2 навыка, профессиональный интерес и личный ресурс.');
+        if (!name) {
+            alert('Пожалуйста, введите имя игрока');
             return;
         }
         
-        this.player.profession = profession;
-        this.player.resource = resource;
+        if (this.usedColors.has(color)) {
+            alert('Этот цвет уже занят. Выберите другой цвет.');
+            return;
+        }
+        
+        // Создаем нового игрока
+        const player = {
+            id: Date.now(),
+            name: name,
+            color: color,
+            position: 1,
+            reputation: 3,
+            careerLevel: 'intern',
+            skills: this.generateRandomSkills(),
+            usedResource: false
+        };
+        
+        this.players.push(player);
+        this.usedColors.add(color);
+        
+        // Обновляем интерфейс
+        this.updatePlayersList();
+        this.updateStartButton();
+        
+        // Очищаем форму
+        nameInput.value = '';
+        nameInput.focus();
+    }
+
+    generateRandomSkills() {
+        const skillIds = Object.keys(SKILLS);
+        const shuffled = skillIds.sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, 2);
+    }
+
+    removePlayer(playerId) {
+        const playerIndex = this.players.findIndex(p => p.id === playerId);
+        if (playerIndex > -1) {
+            const player = this.players[playerIndex];
+            this.usedColors.delete(player.color);
+            this.players.splice(playerIndex, 1);
+            
+            this.updatePlayersList();
+            this.updateStartButton();
+        }
+    }
+
+    updatePlayersList() {
+        const playersList = document.getElementById('playersList');
+        playersList.innerHTML = '';
+        
+        this.players.forEach(player => {
+            const playerItem = document.createElement('div');
+            playerItem.className = `player-item ${player.color}`;
+            playerItem.innerHTML = `
+                <div class="player-info">
+                    <div class="player-color ${player.color}"></div>
+                    <span>${player.name}</span>
+                </div>
+                <button class="remove-player" onclick="game.removePlayer(${player.id})">×</button>
+            `;
+            playersList.appendChild(playerItem);
+        });
+        
+        document.getElementById('totalPlayers').textContent = this.players.length;
+    }
+
+    updateStartButton() {
+        const startBtn = document.getElementById('startGameBtn');
+        startBtn.disabled = this.players.length < 2;
+    }
+
+    startGame() {
+        if (this.players.length < 2) {
+            alert('Для начала игры нужно минимум 2 игрока');
+            return;
+        }
+        
+        this.gameActive = true;
+        this.currentPlayerIndex = 0;
+        this.currentTurn = 1;
         
         // Переключаем на игровой интерфейс
-        document.getElementById('characterSection').style.display = 'none';
+        document.getElementById('setupSection').style.display = 'none';
         document.getElementById('gameInterface').style.display = 'block';
         
-        this.updatePlayerProfile();
-        this.updateCurrentStep('Бросьте кубик для определения типа задания');
+        this.updateCurrentPlayer();
+        this.updatePlayersTable();
+        this.updateCurrentStep(`Ход ${this.currentTurn}. ${this.players[0].name}, ваш ход!`);
     }
 
-    updatePlayerProfile() {
-        document.getElementById('playerName').textContent = PROFESSIONS[this.player.profession].name;
-        document.getElementById('reputation').textContent = this.player.reputation;
-        document.getElementById('playerLevel').textContent = CAREER_LEVELS[this.player.careerLevel].name;
+    updateCurrentPlayer() {
+        const currentPlayer = this.players[this.currentPlayerIndex];
         
-        // Обновляем навыки
-        const skillsContainer = document.getElementById('playerSkills');
-        skillsContainer.innerHTML = '';
+        // Обновляем карточку текущего игрока
+        document.getElementById('currentPlayerAvatar').style.backgroundColor = PLAYER_COLORS[currentPlayer.color].hex;
+        document.getElementById('currentPlayerName').textContent = currentPlayer.name;
+        document.getElementById('currentPlayerReputation').textContent = currentPlayer.reputation;
+        document.getElementById('currentPlayerLevel').textContent = CAREER_LEVELS[currentPlayer.careerLevel].name;
         
-        this.player.skills.forEach(skillId => {
-            const skillTag = document.createElement('div');
-            skillTag.className = 'skill-tag';
-            skillTag.textContent = SKILLS[skillId].name;
-            skillsContainer.appendChild(skillTag);
-        });
-    }
-
-    updateCurrentStep(text) {
-        document.getElementById('currentStep').textContent = text;
+        // Обновляем статус игры
+        document.getElementById('currentTurn').textContent = this.currentTurn;
+        
+        // Сбрасываем состояние задания
+        document.getElementById('completionButtons').style.display = 'none';
+        document.getElementById('rollBtn').disabled = false;
+        
+        this.updateCurrentStep(`Ход ${this.currentTurn}. ${currentPlayer.name}, бросьте кубик!`);
     }
 
     hideDiceDots() {
@@ -152,10 +188,9 @@ class ProfessionalTrackGame {
     }
 
     async rollDice() {
-        if (this.isRolling) return;
+        if (this.isRolling || !this.gameActive) return;
         
         this.isRolling = true;
-        this.totalRolls++;
         
         const rollBtn = document.getElementById('rollBtn');
         const dice = document.getElementById('dice');
@@ -168,7 +203,6 @@ class ProfessionalTrackGame {
         diceNumber.textContent = "?";
         this.hideDiceDots();
         
-        document.getElementById('getQuestBtn').disabled = true;
         document.getElementById('completionButtons').style.display = 'none';
 
         // Анимация броска
@@ -196,8 +230,9 @@ class ProfessionalTrackGame {
         dice.classList.remove('rolling');
         
         // Финальный результат с учетом бонусов уровня
+        const currentPlayer = this.players[this.currentPlayerIndex];
         let result = Math.floor(Math.random() * 6) + 1;
-        if (this.player.careerLevel === 'expert' || this.player.careerLevel === 'leader') {
+        if (currentPlayer.careerLevel === 'expert' || currentPlayer.careerLevel === 'leader') {
             result = Math.min(6, result + 1); // +1 к броску для экспертов и лидеров
         }
         
@@ -205,71 +240,65 @@ class ProfessionalTrackGame {
         this.createDiceDots(result);
         diceResult.textContent = `Выпало: ${result}`;
         
-        // Определяем тип клетки по результату броска
-        this.selectCellType(result);
+        // Определяем тип клетки и получаем задание
+        this.getQuestForRoll(result);
         
         this.isRolling = false;
-        rollBtn.disabled = false;
+        rollBtn.disabled = true;
     }
 
-    selectCellType(diceResult) {
-        let selectedCellType = null;
+    getQuestForRoll(diceResult) {
+        // Определяем тип клетки по результату броска
+        let cellType = 'green'; // По умолчанию зеленая клетка
         
-        // Определяем тип клетки по диапазону кубика
-        for (const [cellType, info] of Object.entries(CELL_TYPES)) {
-            if (diceResult >= info.diceRange[0] && diceResult <= info.diceRange[1]) {
-                selectedCellType = cellType;
-                break;
-            }
+        if (diceResult <= 2) {
+            cellType = 'green'; // 1-2: зеленая клетка (60%)
+        } else if (diceResult <= 4) {
+            cellType = 'blue'; // 3-4: синяя клетка (20%)
+        } else if (diceResult === 5) {
+            cellType = 'yellow'; // 5: желтая клетка (10%)
+        } else {
+            cellType = 'purple'; // 6: фиолетовая клетка (10%)
         }
         
-        this.currentCellType = selectedCellType;
-        this.displayCellType(selectedCellType);
-        document.getElementById('getQuestBtn').disabled = false;
-        
-        this.updateCurrentStep("Тип задания определен! Получите задание");
+        this.showQuest(cellType);
     }
 
-    displayCellType(cellType) {
-        const cellInfo = CELL_TYPES[cellType];
-        const cellSection = document.getElementById('cellSection');
-        const cellDisplay = document.getElementById('cellDisplay');
-        const cellIcon = document.getElementById('cellIcon');
-        const cellTypeElement = document.getElementById('cellType');
-        const cellDescription = document.getElementById('cellDescription');
-        
-        // Применяем цветовую схему клетки
-        cellSection.className = `cell-section cell-${cellType} fade-in`;
-        cellDisplay.className = `cell-display`;
-        cellIcon.textContent = cellInfo.icon;
-        cellTypeElement.textContent = cellInfo.name;
-        cellDescription.textContent = cellInfo.description;
-        
-        // Анимация появления
-        cellSection.style.display = 'block';
-    }
-
-    getQuest() {
-        if (!this.currentCellType) return;
-        
-        const quests = QUESTS[this.currentCellType];
+    showQuest(cellType) {
+        const quests = QUESTS[cellType];
         const randomQuest = quests[Math.floor(Math.random() * quests.length)];
         this.currentQuest = randomQuest;
-        this.displayQuest(randomQuest);
         
-        document.getElementById('getQuestBtn').disabled = true;
+        const cellInfo = {
+            type: cellType,
+            position: `Определено кубиком`
+        };
+        
+        this.displayQuest(randomQuest, cellInfo);
+        
         document.getElementById('completionButtons').style.display = 'grid';
         
-        this.updateCurrentStep("Выполните задание и отметьте результат");
+        const currentPlayer = this.players[this.currentPlayerIndex];
+        this.updateCurrentStep(`${currentPlayer.name}, выполните задание!`);
     }
 
-    displayQuest(quest) {
+    displayQuest(quest, cellInfo) {
         const questElement = document.getElementById('currentQuest');
         const instructionsElement = document.getElementById('instructionsText');
         const rewardsElement = document.getElementById('rewardsText');
         const difficultyElement = document.getElementById('questDifficulty');
+        const cellSection = document.getElementById('cellSection');
+        const cellTypeElement = document.getElementById('cellType');
+        const cellDescription = document.getElementById('cellDescription');
+        const cellPosition = document.getElementById('cellPosition');
         
-        // Анимация появления
+        // Обновляем отображение клетки
+        cellSection.className = `cell-section cell-${cellInfo.type} fade-in`;
+        cellTypeElement.textContent = this.getCellTypeName(cellInfo.type);
+        cellDescription.textContent = this.getCellTypeDescription(cellInfo.type);
+        cellPosition.textContent = `Позиция: ${cellInfo.position}`;
+        
+        // Анимация появления задания
         questElement.style.opacity = '0';
         instructionsElement.style.opacity = '0';
         rewardsElement.style.opacity = '0';
@@ -289,16 +318,37 @@ class ProfessionalTrackGame {
         }, 300);
     }
 
+    getCellTypeName(type) {
+        const names = {
+            green: '🟢 Профессиональный рост',
+            blue: '🔵 Сетевой нетворкинг',
+            yellow: '🟡 События рынка',
+            purple: '🟣 Создание профессии будущего'
+        };
+        return names[type] || type;
+    }
+
+    getCellTypeDescription(type) {
+        const descriptions = {
+            green: 'Индивидуальные кейсы и мини-вызовы',
+            blue: 'Взаимодействие с другими игроками',
+            yellow: 'Случайные события, влияющие на всех',
+            purple: 'Возможность создать новую профессию'
+        };
+        return descriptions[type] || '';
+    }
+
     completeQuest(success) {
         if (!this.currentQuest) return;
         
+        const currentPlayer = this.players[this.currentPlayerIndex];
         let reputationChange = 0;
         let message = "";
         
         if (success) {
             // Проверяем наличие нужных навыков
             const hasRequiredSkill = this.currentQuest.requiredSkills.some(skill => 
-                this.player.skills.includes(skill)
+                currentPlayer.skills.includes(skill)
             );
             
             if (hasRequiredSkill) {
@@ -308,65 +358,106 @@ class ProfessionalTrackGame {
                 reputationChange = 1;
                 message = "Хорошая работа! Вы аргументировали решение и получили +1 Репутации!";
             }
-            
-            // Бонус за ресурс "Убеждение"
-            if (this.player.resource === 'persuade' && !this.player.usedResource) {
-                reputationChange += 2;
-                this.player.usedResource = true;
-                message += " Бонус за использование ресурса 'Убеждение': +2 Репутации!";
-            }
         } else {
             message = "Задание не выполнено. Попробуйте в следующий раз!";
         }
         
-        // Обновляем репутацию
-        this.player.reputation += reputationChange;
+        // Обновляем репутацию игрока
+        currentPlayer.reputation += reputationChange;
         
         // Проверяем повышение уровня
-        this.checkLevelUp();
+        this.checkLevelUp(currentPlayer);
         
         // Добавляем в историю
-        this.addToHistory(success, reputationChange);
+        this.addToHistory(currentPlayer, success, reputationChange);
         
         // Обновляем интерфейс
-        this.updatePlayerProfile();
-        this.updateStats();
-        
-        // Сбрасываем состояние
-        document.getElementById('completionButtons').style.display = 'none';
-        document.getElementById('getQuestBtn').disabled = true;
-        
-        this.updateCurrentStep(success ? "Задание выполнено! Бросьте кубик снова" : "Задание не выполнено. Бросьте кубик снова");
+        this.updatePlayersTable();
         
         // Показываем сообщение о результате
         alert(message);
+        
+        // Автоматически переходим к следующему игроку через 2 секунды
+        setTimeout(() => {
+            this.nextPlayer();
+        }, 2000);
     }
 
-    checkLevelUp() {
+    checkLevelUp(player) {
         const levels = Object.entries(CAREER_LEVELS);
         for (const [level, info] of levels) {
-            if (this.player.reputation >= info.reputation && level !== this.player.careerLevel) {
-                this.player.careerLevel = level;
-                this.updatePlayerProfile();
+            if (player.reputation >= info.reputation && level !== player.careerLevel) {
+                player.careerLevel = level;
                 
                 if (level === 'specialist' || level === 'expert' || level === 'leader') {
-                    alert(`🎉 Поздравляем! Вы достигли уровня "${info.name}"! ${info.bonus}`);
+                    // Сообщение о повышении уровня показывается в основном сообщении
                 }
                 break;
             }
         }
     }
 
-    addToHistory(success, reputationChange) {
+    nextPlayer() {
+        // Переходим к следующему игроку
+        this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
+        
+        // Если прошли полный круг, увеличиваем номер хода
+        if (this.currentPlayerIndex === 0) {
+            this.currentTurn++;
+            
+            // Проверяем условие завершения игры (например, после 10 ходов)
+            if (this.currentTurn > 10) {
+                this.endGame();
+                return;
+            }
+        }
+        
+        this.updateCurrentPlayer();
+        this.updateCurrentStep(`Ход ${this.currentTurn}. ${this.players[this.currentPlayerIndex].name}, ваш ход!`);
+    }
+
+    updatePlayersTable() {
+        const playersTable = document.getElementById('playersTable');
+        playersTable.innerHTML = '';
+        
+        // Заголовок таблицы
+        const headerRow = document.createElement('div');
+        headerRow.className = 'table-row table-header';
+        headerRow.innerHTML = `
+            <div class="table-cell">#</div>
+            <div class="table-cell">Игрок</div>
+            <div class="table-cell">Уровень</div>
+            <div class="table-cell">Репутация</div>
+        `;
+        playersTable.appendChild(headerRow);
+        
+        // Данные игроков
+        this.players.forEach((player, index) => {
+            const row = document.createElement('div');
+            row.className = `table-row ${index === this.currentPlayerIndex ? 'current-turn' : ''}`;
+            row.innerHTML = `
+                <div class="table-cell">${index + 1}</div>
+                <div class="table-cell">
+                    <div class="player-color-small ${player.color}"></div>
+                    ${player.name}
+                </div>
+                <div class="table-cell">${CAREER_LEVELS[player.careerLevel].name}</div>
+                <div class="table-cell">${player.reputation}</div>
+            `;
+            playersTable.appendChild(row);
+        });
+    }
+
+    addToHistory(player, success, reputationChange) {
         const historyItem = document.createElement('div');
-        historyItem.className = `history-item ${this.currentCellType}`;
+        historyItem.className = `history-item ${player.color}`;
         
         const resultIcon = success ? '✅' : '❌';
         const changeText = reputationChange > 0 ? `+${reputationChange} Репутации` : 'Без изменений';
         
         historyItem.innerHTML = `
-            <strong>${this.currentQuest.title}</strong><br>
-            <small>${resultIcon} ${changeText} | ${CELL_TYPES[this.currentCellType].name}</small>
+            <strong>${player.name}: ${this.currentQuest.title}</strong><br>
+            <small>${resultIcon} ${changeText} | Уровень: ${CAREER_LEVELS[player.careerLevel].name}</small>
         `;
         
         const history = document.getElementById('history');
@@ -374,28 +465,92 @@ class ProfessionalTrackGame {
         
         // Сохраняем в массив истории
         this.gameHistory.unshift({
-            title: this.currentQuest.title,
-            cellType: this.currentCellType,
+            player: player.name,
+            quest: this.currentQuest.title,
             success: success,
             reputationChange: reputationChange,
             timestamp: new Date().toLocaleTimeString()
         });
         
-        // Ограничиваем историю 8 последними записями
-        if (this.gameHistory.length > 8) {
+        // Ограничиваем историю 10 последними записями
+        if (this.gameHistory.length > 10) {
             this.gameHistory.pop();
-            if (history.children.length > 8) {
+            if (history.children.length > 10) {
                 history.removeChild(history.lastChild);
             }
         }
     }
 
-    updateStats() {
-        // Можно добавить дополнительную статистику при необходимости
+    endGame() {
+        this.gameActive = false;
+        
+        // Определяем победителя
+        const winner = this.players.reduce((prev, current) => 
+            (prev.reputation > current.reputation) ? prev : current
+        );
+        
+        // Показываем экран результатов
+        document.getElementById('gameInterface').style.display = 'none';
+        document.getElementById('resultsSection').style.display = 'block';
+        
+        this.showResults(winner);
+    }
+
+    showResults(winner) {
+        const winnerCard = document.getElementById('winnerCard');
+        const finalResults = document.getElementById('finalResults');
+        
+        // Победитель
+        winnerCard.innerHTML = `
+            <h3>🏆 Победитель!</h3>
+            <div style="display: flex; align-items: center; gap: 15px; margin: 15px 0;">
+                <div class="player-color ${winner.color}" style="width: 40px; height: 40px;"></div>
+                <div>
+                    <div style="font-size: 20px; font-weight: bold;">${winner.name}</div>
+                    <div>Уровень: ${CAREER_LEVELS[winner.careerLevel].name}</div>
+                    <div>Репутация: ${winner.reputation}</div>
+                </div>
+            </div>
+        `;
+        
+        // Финальные результаты всех игроков
+        finalResults.innerHTML = `
+            <h4>📊 Финальные результаты:</h4>
+            ${this.players.map(player => `
+                <div style="display: flex; justify-content: space-between; margin: 8px 0; padding: 8px; background: rgba(255,255,255,0.1); border-radius: 8px;">
+                    <span>${player.name}</span>
+                    <span>${player.reputation} репутации (${CAREER_LEVELS[player.careerLevel].name})</span>
+                </div>
+            `).join('')}
+        `;
+    }
+
+    newGame() {
+        // Сброс игры
+        this.players = [];
+        this.currentPlayerIndex = 0;
+        this.currentTurn = 1;
+        this.gameHistory = [];
+        this.usedColors.clear();
+        this.gameActive = false;
+        
+        // Сброс интерфейса
+        document.getElementById('resultsSection').style.display = 'none';
+        document.getElementById('setupSection').style.display = 'block';
+        document.getElementById('playersList').innerHTML = '';
+        document.getElementById('playerNameInput').value = '';
+        document.getElementById('history').innerHTML = '';
+        
+        this.updateStartButton();
+        this.showWelcomeState();
+    }
+
+    updateCurrentStep(text) {
+        document.getElementById('currentStep').textContent = text;
     }
 
     showWelcomeState() {
-        this.updateCurrentStep("Создайте персонажа для начала игры");
+        this.updateCurrentStep("Добавьте игроков для начала игры");
         document.getElementById('diceNumber').textContent = "?";
         document.getElementById('diceResult').textContent = "Результат: -";
         
@@ -409,14 +564,12 @@ class ProfessionalTrackGame {
         const rewardsElement = document.getElementById('rewardsText');
         const difficultyElement = document.getElementById('questDifficulty');
         
-        questElement.textContent = "Сначала определите тип задания!";
-        instructionsElement.textContent = "• Бросьте кубик для определения типа клетки\n• Получите профессиональный вызов\n• Выполните задание и отметьте результат";
+        questElement.textContent = "Бросьте кубик для получения задания!";
+        instructionsElement.textContent = "• Бросьте кубик для определения типа клетки\n• Выполните профессиональное задание\n• Получите репутацию и развивайтесь";
         rewardsElement.textContent = "• Репутация и профессиональный рост\n• Новые навыки и компетенции\n• Карьерное развитие";
         difficultyElement.textContent = "Сложность: -";
     }
 }
 
-// Запуск игры когда страница загружена
-document.addEventListener('DOMContentLoaded', () => {
-    new ProfessionalTrackGame();
-});
+// Создаем глобальную переменную для доступа к методам из HTML
+const game = new ProfessionalTrackGame();
