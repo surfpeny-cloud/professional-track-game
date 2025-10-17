@@ -49,8 +49,8 @@ body {
     font-weight: bold;
 }
 
-/* Создание персонажа */
-.character-section {
+/* Настройка игры */
+.setup-section {
     background: rgba(255, 255, 255, 0.1);
     padding: 20px;
     border-radius: 15px;
@@ -58,7 +58,7 @@ body {
     backdrop-filter: blur(10px);
 }
 
-.character-form h3 {
+.setup-form h3 {
     margin-bottom: 20px;
     text-align: center;
     color: #74b9ff;
@@ -75,49 +75,118 @@ body {
     color: #dfe6e9;
 }
 
-.skills-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
+.players-list {
     margin-bottom: 15px;
+    max-height: 200px;
+    overflow-y: auto;
 }
 
-.skill-option {
+.player-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     background: rgba(255, 255, 255, 0.1);
     padding: 12px;
     border-radius: 10px;
-    text-align: center;
+    margin-bottom: 8px;
+    border-left: 4px solid;
+}
+
+.player-item.red { border-left-color: #ff6b6b; }
+.player-item.blue { border-left-color: #74b9ff; }
+.player-item.green { border-left-color: #00b894; }
+.player-item.yellow { border-left-color: #fdcb6e; }
+.player-item.purple { border-left-color: #6c5ce7; }
+.player-item.orange { border-left-color: #fd9644; }
+
+.player-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.player-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.player-color.red { background: #ff6b6b; }
+.player-color.blue { background: #74b9ff; }
+.player-color.green { background: #00b894; }
+.player-color.yellow { background: #fdcb6e; }
+.player-color.purple { background: #6c5ce7; }
+.player-color.orange { background: #fd9644; }
+
+.remove-player {
+    background: #ff7675;
+    border: none;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
     cursor: pointer;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
+    font-size: 12px;
 }
 
-.skill-option:hover {
-    background: rgba(255, 255, 255, 0.2);
+.add-player-form {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    gap: 10px;
+    align-items: center;
 }
 
-.skill-option.selected {
-    background: rgba(116, 185, 255, 0.3);
-    border-color: #74b9ff;
-    transform: scale(1.05);
-}
-
-.skill-option.disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.profession-select, .resource-select {
-    width: 100%;
-    padding: 12px;
-    border-radius: 10px;
+.player-input {
+    padding: 10px;
+    border-radius: 8px;
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid rgba(255, 255, 255, 0.2);
     color: white;
-    font-size: 16px;
+    font-size: 14px;
 }
 
-.create-btn {
+.color-select {
+    padding: 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 14px;
+}
+
+.add-btn {
+    background: #00b894;
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.game-info {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.game-info h4 {
+    margin-bottom: 10px;
+    color: #74b9ff;
+}
+
+.game-info ul {
+    padding-left: 20px;
+}
+
+.game-info li {
+    margin-bottom: 5px;
+    font-size: 14px;
+}
+
+.start-btn {
     width: 100%;
     background: linear-gradient(45deg, #00b894, #00a085);
     border: none;
@@ -131,18 +200,19 @@ body {
     box-shadow: 0 5px 20px rgba(0, 184, 148, 0.3);
 }
 
-.create-btn:hover {
+.start-btn:hover:not(:disabled) {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 184, 148, 0.5);
 }
 
-/* Игровой интерфейс */
-.game-interface {
-    animation: fadeIn 0.5s ease-out;
+.start-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
 }
 
-/* Профиль игрока */
-.player-profile {
+/* Текущий игрок */
+.current-player-section {
     background: rgba(255, 255, 255, 0.1);
     padding: 15px;
     border-radius: 15px;
@@ -150,19 +220,32 @@ body {
     backdrop-filter: blur(10px);
 }
 
-.profile-info {
+.current-player-card {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 15px;
     margin-bottom: 10px;
+}
+
+.player-avatar {
+    font-size: 40px;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(116, 185, 255, 0.3);
+}
+
+.player-info {
+    flex: 1;
 }
 
 .player-name {
     font-size: 18px;
     font-weight: bold;
-    background: linear-gradient(45deg, #74b9ff, #0984e3);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    margin-bottom: 5px;
 }
 
 .player-stats {
@@ -171,33 +254,61 @@ body {
 }
 
 .stat {
+    font-size: 14px;
+    color: #dfe6e9;
+}
+
+.turn-indicator {
+    text-align: center;
+    background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+    padding: 8px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Статус игры */
+.game-status {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-item {
     text-align: center;
 }
 
-.stat-label {
+.status-label {
     display: block;
     font-size: 12px;
     color: #ccc;
+    margin-bottom: 5px;
 }
 
-.stat-value {
+.status-value {
     display: block;
     font-size: 16px;
     font-weight: bold;
 }
 
-.player-skills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+.next-btn {
+    background: linear-gradient(45deg, #fd79a8, #e84393);
+    border: none;
+    color: white;
+    padding: 10px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-.skill-tag {
-    background: rgba(116, 185, 255, 0.3);
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 12px;
-    border: 1px solid #74b9ff;
+.next-btn:hover {
+    transform: translateY(-2px);
 }
 
 /* Улучшенный кубик */
@@ -343,7 +454,7 @@ body {
     margin-bottom: 15px;
 }
 
-.roll-btn:hover {
+.roll-btn:hover:not(:disabled) {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(108, 92, 231, 0.5);
 }
@@ -410,37 +521,12 @@ body {
     font-size: 14px;
     opacity: 0.9;
     line-height: 1.4;
+    margin-bottom: 5px;
 }
 
-/* Кнопка задания */
-.action-section {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-.quest-btn {
-    background: linear-gradient(45deg, #00b894, #00a085);
-    border: none;
-    color: white;
-    padding: 15px 35px;
-    border-radius: 30px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 20px rgba(0, 184, 148, 0.3);
-    width: 100%;
-}
-
-.quest-btn:hover:not(:disabled) {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 184, 148, 0.5);
-}
-
-.quest-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
+.cell-position {
+    font-size: 12px;
+    color: #ccc;
 }
 
 /* Задания */
@@ -554,6 +640,52 @@ body {
     box-shadow: 0 5px 15px rgba(255, 118, 117, 0.4);
 }
 
+/* Таблица игроков */
+.players-table-section {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.players-table-section h3 {
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.players-table {
+    display: grid;
+    gap: 8px;
+}
+
+.table-row {
+    display: grid;
+    grid-template-columns: 30px 1fr 60px 80px;
+    gap: 10px;
+    align-items: center;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+}
+
+.table-header {
+    background: rgba(255, 255, 255, 0.2);
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.table-cell {
+    text-align: center;
+}
+
+.player-color-small {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    margin: 0 auto;
+}
+
 /* История */
 .history-section {
     background: rgba(255, 255, 255, 0.1);
@@ -586,6 +718,73 @@ body {
 .history-item:hover {
     transform: translateX(5px);
     background: rgba(0, 0, 0, 0.4);
+}
+
+/* Управление игрой */
+.game-controls {
+    text-align: center;
+}
+
+.end-btn {
+    background: linear-gradient(45deg, #e17055, #d63031);
+    border: none;
+    color: white;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.end-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(225, 112, 85, 0.4);
+}
+
+/* Результаты */
+.results-section {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+.results-container {
+    text-align: center;
+}
+
+.results-container h2 {
+    margin-bottom: 20px;
+    color: #74b9ff;
+}
+
+.winner-card {
+    background: linear-gradient(45deg, #fdcb6e, #e17055);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+.final-results {
+    margin-bottom: 20px;
+}
+
+.new-game-btn {
+    background: linear-gradient(45deg, #00b894, #00a085);
+    border: none;
+    color: white;
+    padding: 15px 30px;
+    border-radius: 25px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.new-game-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
 }
 
 /* Цветовые схемы для клеток */
@@ -633,4 +832,9 @@ body {
 
 .hidden {
     display: none;
+}
+
+.current-turn {
+    background: rgba(108, 92, 231, 0.3) !important;
+    border: 2px solid #6c5ce7;
 }
