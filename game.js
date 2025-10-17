@@ -651,3 +651,460 @@ class ProfessionalTrackGame {
 
 // Создаем глобальную переменную для доступа к методам из HTML
 const game = new ProfessionalTrackGame();
+
+class ProfessionalTrackGame {
+    constructor() {
+        this.players = [];
+        this.currentPlayerIndex = 0;
+        this.currentTurn = 1;
+        this.currentQuest = null;
+        this.isRolling = false;
+        this.gameHistory = [];
+        this.gameActive = false;
+        this.usedColors = new Set();
+        this.shop = new Shop(this);
+        
+        this.init();
+    }
+
+    init() {
+        // ... (предыдущий код инициализации)
+
+        // Добавляем обработчики для магазина
+        document.getElementById('shopBtn').addEventListener('click', () => this.openShop());
+        document.getElementById('closeShopBtn').addEventListener('click', () => this.closeShop());
+
+        this.showWelcomeState();
+    }
+
+    openShop() {
+        const currentPlayer = this.players[this.currentPlayerIndex];
+        this.shop.open(currentPlayer);
+    }
+
+    closeShop() {
+        this.shop.close();
+    }
+
+    // ... (остальные методы без изменений)
+
+    completeQuest(success) {
+        if (!this.currentQuest) return;
+        
+        const currentPlayer = this.players[this.currentPlayerIndex];
+        let reputationChange = 0;
+        let message = "";
+        
+        if (success) {
+            // Проверяем наличие нужных навыков
+            const hasRequiredSkill = this.currentQuest.requiredSkills.some(skill => 
+                currentPlayer.skills.includes(skill)
+            );
+            
+            if (hasRequiredSkill) {
+                reputationChange = 2;
+                message = "Отлично! Вы использовали свой навык и получили +2 Репутации!";
+            } else {
+                reputationChange = 1;
+                message = "Хорошая работа! Вы аргументировали решение и получили +1 Репутации!";
+            }
+
+            // Применяем множители репутации из инвентаря
+            const multiplier = this.shop.getReputationMultiplier(currentPlayer);
+            if (multiplier > 1) {
+                const originalReputation = reputationChange;
+                reputationChange = Math.floor(reputationChange * multiplier);
+                message += ` Множитель x${multiplier}: +${reputationChange} вместо +${originalReputation}!`;
+                this.shop.consumeItem(currentPlayer, 'reputation_multiplier');
+            }
+        } else {
+            message = "Задание не выполнено. Попробуйте в следующий раз!";
+        }
+        
+        // Обновляем репутацию игрока
+        currentPlayer.reputation += reputationChange;
+        
+        // Проверяем повышение уровня
+        this.checkLevelUp(currentPlayer);
+        
+        // Добавляем в историю
+        this.addToHistory(currentPlayer, success, reputationChange);
+        
+        // Обновляем интерфейс
+        this.updatePlayersTable();
+        this.updateCurrentPlayer();
+        
+        // Показываем сообщение о результате
+        this.showMessage(message, success ? 'success' : 'info');
+        
+        // Автоматически переходим к следующему игроку через 2 секунды
+        setTimeout(() => {
+            this.nextPlayer();
+        }, 2000);
+    }
+
+    // ... (остальные методы)
+}
+
+class Shop {
+    constructor(game) {
+        this.game = game;
+        this.currentCategory = 'skills';
+        this.init();
+    }
+
+    init() {
+        // Создаем модальное окно для информации о товаре
+        this.createItemModal();
+    }
+
+    createItemModal() {
+        this.modal = document.createElement('div');
+        this.modal.className = 'item-modal';
+        this.modal.style.display = 'none';
+        this.modal.innerHTML = `
+            <div class="modal-content">
+                <button class="modal-close">✕</button>
+                <div class="modal-header">
+                    <div class="modal-icon" id="modalItemIcon">🎁</div>
+                    <div class="modal-title" id="modalItemName">Название товара</div>
+                </div>
+                <div class="modal-description" id="modalItemDescription">Описание товара</div>
+                <div class="modal-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Цена:</span>
+                        <span class="detail-value" id="modalItemPrice">0 ⭐</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Тип:</span>
+                        <span class="detail-value" id="modalItemType">-</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Эффект:</span>
+                        <span class="detail-value" id="modalItemEffect">-</span>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="buy-btn" id="modalBuyBtn">
+                        <span class="btn-icon">🛒</span>
+                        Купить
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(this.modal);
+
+        // Обработчики для модального окна
+        this.modal.querySelector('.modal-close').addEventListener('click', () => this.closeModal());
+        this.modal.querySelector('#modalBuyBtn').addEventListener('click', () => this.buyCurrentItem());
+    }
+
+    open(player) {
+        this.currentPlayer = player;
+        this.updateShopDisplay();
+        document.getElementById('shopSection').style.display = 'block';
+    }
+
+    close() {
+        document.getElementById('shopSection').style.display = 'none';
+    }
+
+    closeModal() {
+        this.modal.style.display = 'none';
+        this.currentItem = null;
+    }
+
+    updateShopDisplay() {
+        this.updateBalance();
+        this.updateCategories();
+        this.updateItems();
+        this.updateInventory();
+    }
+
+    updateBalance() {
+        document.getElementById('shopBalance').textContent = this.currentPlayer.reputation;
+    }
+
+    updateCategories() {
+        const categoryTabs = document.getElementById('categoryTabs');
+        categoryTabs.innerHTML = '';
+
+        SHOP_CATEGORIES.forEach(category => {
+            const tab = document.createElement('button');
+            tab.className = `category-tab ${this.currentCategory === category.id ? 'active' : ''}`;
+            tab.innerHTML = `
+                <span class="tab-icon">${category.icon}</span>
+                <span class="tab-name">${category.name}</span>
+            `;
+            tab.addEventListener('click', () => this.switchCategory(category.id));
+            categoryTabs.appendChild(tab);
+        });
+    }
+
+    switchCategory(categoryId) {
+        this.currentCategory = categoryId;
+        this.updateCategories();
+        this.updateItems();
+    }
+
+    updateItems() {
+        const shopItems = document.getElementById('shopItems');
+        const categoryItems = SHOP_ITEMS[this.currentCategory].items;
+        
+        shopItems.innerHTML = '';
+
+        categoryItems.forEach(item => {
+            const canAfford = this.currentPlayer.reputation >= item.price;
+            const alreadyOwned = this.currentPlayer.inventory && 
+                                this.currentPlayer.inventory.find(invItem => invItem.id === item.id && 
+                                (item.type === 'permanent' || invItem.uses > 0));
+            const canBuy = canAfford && !(item.type === 'permanent' && alreadyOwned);
+
+            const itemElement = document.createElement('div');
+            itemElement.className = `shop-item ${item.featured ? 'featured' : ''}`;
+            itemElement.innerHTML = `
+                <div class="shop-item-header">
+                    <div class="item-icon">${item.icon}</div>
+                    <div class="item-info">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-description">${item.description}</div>
+                    </div>
+                    <div class="item-price">
+                        <span class="price-icon">⭐</span>
+                        <span class="price-amount">${item.price}</span>
+                    </div>
+                </div>
+                <div class="item-actions">
+                    <button class="buy-btn" ${!canBuy ? 'disabled' : ''} data-item-id="${item.id}">
+                        <span class="btn-icon">${canBuy ? '🛒' : '❌'}</span>
+                        ${canBuy ? 'Купить' : alreadyOwned ? 'Уже есть' : 'Не хватает'}
+                    </button>
+                    <button class="info-btn" data-item-id="${item.id}">ℹ️</button>
+                </div>
+            `;
+
+            // Обработчики для кнопок
+            itemElement.querySelector('.buy-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.buyItem(item);
+            });
+
+            itemElement.querySelector('.info-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.showItemInfo(item);
+            });
+
+            shopItems.appendChild(itemElement);
+        });
+    }
+
+    updateInventory() {
+        const inventoryGrid = document.getElementById('inventoryGrid');
+        
+        if (!this.currentPlayer.inventory || this.currentPlayer.inventory.length === 0) {
+            inventoryGrid.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 20px; color: var(--text-muted);">
+                    <div style="font-size: 32px; margin-bottom: 10px;">🎒</div>
+                    <div>Инвентарь пуст</div>
+                    <div style="font-size: 12px; opacity: 0.7;">Купите улучшения в магазине</div>
+                </div>
+            `;
+            return;
+        }
+
+        inventoryGrid.innerHTML = '';
+
+        this.currentPlayer.inventory.forEach(invItem => {
+            const itemData = this.findItemData(invItem.id);
+            if (!itemData) return;
+
+            const isActive = invItem.uses > 0 || itemData.type === 'permanent';
+            
+            const itemElement = document.createElement('div');
+            itemElement.className = `inventory-item ${isActive ? 'active' : ''}`;
+            itemElement.innerHTML = `
+                <div class="inventory-icon">${itemData.icon}</div>
+                <div class="inventory-name">${itemData.name}</div>
+                ${itemData.type !== 'permanent' ? 
+                    `<div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">${invItem.uses} исп.</div>` : 
+                    ''
+                }
+            `;
+
+            itemElement.addEventListener('click', () => {
+                this.showItemInfo(itemData, invItem);
+            });
+
+            inventoryGrid.appendChild(itemElement);
+        });
+    }
+
+    findItemData(itemId) {
+        for (const category of Object.values(SHOP_ITEMS)) {
+            const item = category.items.find(item => item.id === itemId);
+            if (item) return item;
+        }
+        return null;
+    }
+
+    showItemInfo(item, inventoryItem = null) {
+        this.currentItem = item;
+        
+        document.getElementById('modalItemIcon').textContent = item.icon;
+        document.getElementById('modalItemName').textContent = item.name;
+        document.getElementById('modalItemDescription').textContent = item.description;
+        document.getElementById('modalItemPrice').textContent = `${item.price} ⭐`;
+        
+        // Определяем тип товара
+        let typeText = '';
+        switch (item.type) {
+            case 'permanent': typeText = '📦 Постоянное'; break;
+            case 'consumable': typeText = '🎯 Расходное'; break;
+            case 'temporary': typeText = '⏱️ Временное'; break;
+            case 'instant': typeText = '⚡ Мгновенное'; break;
+        }
+        document.getElementById('modalItemType').textContent = typeText;
+
+        // Описание эффекта
+        let effectText = '';
+        switch (item.effect) {
+            case 'add_skill_slot': effectText = 'Открывает дополнительный слот для навыка'; break;
+            case 'skill_boost': effectText = `+1 к проверкам навыка на ${item.duration} хода`; break;
+            case 'reroll_dice': effectText = 'Позволяет перебросить кубик 1 раз'; break;
+            case 'dice_bonus': effectText = `+${item.bonus} к следующему броску кубика`; break;
+            case 'advantage_roll': effectText = 'Бросок двух кубиков с выбором лучшего'; break;
+            case 'add_reputation': effectText = `Мгновенно +${item.amount} к репутации`; break;
+            case 'reputation_multiplier': effectText = `Умножает репутацию x${item.multiplier}`; break;
+            case 'time_extension': effectText = `+${item.minutes} мин. на выполнение задания`; break;
+            case 'skip_quest': effectText = 'Пропуск задания без последствий'; break;
+            case 'get_hint': effectText = 'Получить подсказку для задания'; break;
+        }
+        document.getElementById('modalItemEffect').textContent = effectText;
+
+        // Настройка кнопки покупки
+        const buyBtn = document.getElementById('modalBuyBtn');
+        const canAfford = this.currentPlayer.reputation >= item.price;
+        const alreadyOwned = inventoryItem !== null;
+
+        if (alreadyOwned && item.type === 'permanent') {
+            buyBtn.disabled = true;
+            buyBtn.innerHTML = '<span class="btn-icon">✅</span> Уже куплено';
+        } else if (!canAfford) {
+            buyBtn.disabled = true;
+            buyBtn.innerHTML = '<span class="btn-icon">❌</span> Не хватает репутации';
+        } else {
+            buyBtn.disabled = false;
+            buyBtn.innerHTML = '<span class="btn-icon">🛒</span> Купить';
+        }
+
+        this.modal.style.display = 'flex';
+    }
+
+    buyItem(item) {
+        if (this.currentPlayer.reputation < item.price) {
+            this.game.showMessage('Недостаточно репутации!', 'warning');
+            return;
+        }
+
+        // Проверяем, не куплен ли уже постоянный предмет
+        if (item.type === 'permanent') {
+            const alreadyOwned = this.currentPlayer.inventory && 
+                                this.currentPlayer.inventory.find(invItem => invItem.id === item.id);
+            if (alreadyOwned) {
+                this.game.showMessage('Это улучшение уже куплено!', 'warning');
+                return;
+            }
+        }
+
+        // Списание репутации
+        this.currentPlayer.reputation -= item.price;
+
+        // Добавление предмета в инвентарь
+        if (!this.currentPlayer.inventory) {
+            this.currentPlayer.inventory = [];
+        }
+
+        let inventoryItem;
+        if (item.type === 'consumable' || item.type === 'temporary') {
+            inventoryItem = {
+                id: item.id,
+                uses: item.uses || 1
+            };
+        } else if (item.type === 'permanent') {
+            inventoryItem = {
+                id: item.id,
+                active: true
+            };
+            // Применяем эффект постоянного предмета сразу
+            this.applyItemEffect(item);
+        } else if (item.type === 'instant') {
+            // Мгновенно применяем эффект
+            this.applyItemEffect(item);
+            inventoryItem = null;
+        }
+
+        if (inventoryItem) {
+            this.currentPlayer.inventory.push(inventoryItem);
+        }
+
+        // Обновляем интерфейс
+        this.updateShopDisplay();
+        this.game.updateCurrentPlayer();
+        this.game.updatePlayersTable();
+
+        // Анимация успешной покупки
+        const boughtItem = document.querySelector(`[data-item-id="${item.id}"]`).closest('.shop-item');
+        boughtItem.classList.add('purchase-success');
+
+        this.game.showMessage(`Успешная покупка: ${item.name}!`, 'success');
+        
+        // Закрываем модальное окно если оно открыто
+        this.closeModal();
+    }
+
+    buyCurrentItem() {
+        if (this.currentItem) {
+            this.buyItem(this.currentItem);
+        }
+    }
+
+    applyItemEffect(item) {
+        switch (item.effect) {
+            case 'add_skill_slot':
+                // У игрока теперь может быть на 1 навык больше
+                this.game.showMessage('🎉 Теперь вы можете выбрать дополнительный навык!', 'success');
+                break;
+            case 'add_reputation':
+                this.currentPlayer.reputation += item.amount;
+                this.game.showMessage(`✨ Получено +${item.amount} репутации!`, 'success');
+                break;
+        }
+    }
+
+    consumeItem(player, itemId) {
+        const inventoryItem = player.inventory.find(item => item.id === itemId);
+        if (inventoryItem && inventoryItem.uses > 0) {
+            inventoryItem.uses--;
+            if (inventoryItem.uses <= 0) {
+                player.inventory = player.inventory.filter(item => item !== inventoryItem);
+            }
+        }
+    }
+
+    getReputationMultiplier(player) {
+        const multiplierItem = player.inventory?.find(item => item.id === 'reputation_multiplier' && item.uses > 0);
+        return multiplierItem ? SHOP_ITEMS.reputation.items.find(item => item.id === 'reputation_multiplier').multiplier : 1;
+    }
+
+    canRerollDice(player) {
+        const rerollItem = player.inventory?.find(item => item.id === 'lucky_dice' && item.uses > 0);
+        return !!rerollItem;
+    }
+
+    useRerollDice(player) {
+        this.consumeItem(player, 'lucky_dice');
+    }
+}
+
+// Создаем глобальную переменную для доступа к методам из HTML
+const game = new ProfessionalTrackGame();
