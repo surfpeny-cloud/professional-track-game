@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Профессиональный трек: Маршрут Успеха</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <!-- Заголовок -->
+        <div class="header">
+            <h1>🎯 Профессиональный трек</h1>
+            <div class="subtitle">Маршрут Успеха</div>
+            <div class="current-step" id="currentStep">Создайте персонажа для начала игры</div>
+        </div>
+
+        <!-- Создание персонажа -->
+        <div class="character-section" id="characterSection">
+            <div class="character-form">
+                <h3>👤 Создание персонажа</h3>
+                
+                <div class="form-group">
+                    <label>Стартовые навыки (выберите 2):</label>
+                    <div class="skills-grid" id="skillsGrid">
+                        <!-- Навыки будут добавлены через JavaScript -->
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Профессиональный интерес:</label>
+                    <select id="professionSelect" class="profession-select">
+                        <option value="">Выберите направление</option>
+                        <option value="it">IT-сфера</option>
+                        <option value="design">Дизайн и креатив</option>
+                        <option value="business">Бизнес и менеджмент</option>
+                        <option value="science">Наука и исследования</option>
+                        <option value="education">Образование и развитие</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Личный ресурс (1 использование за игру):</label>
+                    <select id="resourceSelect" class="resource-select">
+                        <option value="">Выберите ресурс</option>
+                        <option value="listen">Умение слушать</option>
+                        <option value="adapt">Адаптивность</option>
+                        <option value="empathy">Эмпатия</option>
+                        <option value="persuade">Убеждение</option>
+                    </select>
+                </div>
+
+                <button id="createCharacterBtn" class="create-btn">🎮 Начать карьеру</button>
+            </div>
+        </div>
+
+        <!-- Игровой интерфейс -->
+        <div class="game-interface" id="gameInterface" style="display: none;">
+            <!-- Профиль игрока -->
+            <div class="player-profile">
+                <div class="profile-info">
+                    <div class="player-name" id="playerName">Специалист</div>
+                    <div class="player-stats">
+                        <div class="stat">
+                            <span class="stat-label">Репутация:</span>
+                            <span class="stat-value" id="reputation">3</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Уровень:</span>
+                            <span class="stat-value" id="playerLevel">Стажер</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="player-skills" id="playerSkills">
+                    <!-- Навыки игрока -->
+                </div>
+            </div>
+
+            <!-- Улучшенный кубик -->
+            <div class="dice-section">
+                <div class="dice-container">
+                    <div class="dice" id="dice">
+                        <div class="dice-face">
+                            <div class="dice-number" id="diceNumber">?</div>
+                            <div class="dice-dots" id="diceDots"></div>
+                        </div>
+                    </div>
+                    <div class="dice-shadow"></div>
+                </div>
+                <button id="rollBtn" class="roll-btn">🎯 Бросить кубик</button>
+                <div class="dice-result" id="diceResult">Результат: -</div>
+            </div>
+
+            <!-- Тип клетки -->
+            <div class="cell-section" id="cellSection">
+                <div class="cell-display" id="cellDisplay">
+                    <div class="cell-icon" id="cellIcon">🎯</div>
+                    <div class="cell-info">
+                        <div class="cell-type" id="cellType">Тип задания</div>
+                        <div class="cell-description" id="cellDescription">Бросьте кубик для определения типа задания</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Кнопка получения задания -->
+            <div class="action-section">
+                <button id="getQuestBtn" class="quest-btn" disabled>📜 Получить задание</button>
+            </div>
+
+            <!-- Профессиональное задание -->
+            <div class="quest-section" id="questSection">
+                <div class="quest-header">
+                    <h3>💼 Профессиональный вызов</h3>
+                    <div class="quest-difficulty" id="questDifficulty">Сложность: -</div>
+                </div>
+                <div class="quest" id="currentQuest">Сначала определите тип задания!</div>
+                
+                <div class="quest-instructions">
+                    <h4>🎯 Варианты решения:</h4>
+                    <div id="instructionsText">-</div>
+                </div>
+
+                <div class="quest-rewards">
+                    <h4>🏆 Награда за выполнение:</h4>
+                    <div id="rewardsText">-</div>
+                </div>
+
+                <!-- Кнопки выполнения -->
+                <div class="completion-buttons" id="completionButtons" style="display: none;">
+                    <button id="successBtn" class="success-btn">✅ Выполнил успешно</button>
+                    <button id="failBtn" class="fail-btn">❌ Не выполнил</button>
+                </div>
+            </div>
+
+            <!-- История -->
+            <div class="history-section">
+                <h3>📈 История карьеры</h3>
+                <div class="history" id="history"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>

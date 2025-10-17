@@ -1,0 +1,636 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    color: white;
+    min-height: 100vh;
+    padding: 10px;
+    line-height: 1.6;
+}
+
+.app {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Заголовок */
+.header {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.header h1 {
+    font-size: 24px;
+    margin-bottom: 5px;
+    background: linear-gradient(45deg, #00b894, #0984e3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    font-size: 16px;
+    color: #a29bfe;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.current-step {
+    font-size: 14px;
+    color: #dfe6e9;
+    font-weight: bold;
+}
+
+/* Создание персонажа */
+.character-section {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.character-form h3 {
+    margin-bottom: 20px;
+    text-align: center;
+    color: #74b9ff;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #dfe6e9;
+}
+
+.skills-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.skill-option {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.skill-option:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.skill-option.selected {
+    background: rgba(116, 185, 255, 0.3);
+    border-color: #74b9ff;
+    transform: scale(1.05);
+}
+
+.skill-option.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.profession-select, .resource-select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 16px;
+}
+
+.create-btn {
+    width: 100%;
+    background: linear-gradient(45deg, #00b894, #00a085);
+    border: none;
+    color: white;
+    padding: 15px;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 20px rgba(0, 184, 148, 0.3);
+}
+
+.create-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 184, 148, 0.5);
+}
+
+/* Игровой интерфейс */
+.game-interface {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Профиль игрока */
+.player-profile {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.profile-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.player-name {
+    font-size: 18px;
+    font-weight: bold;
+    background: linear-gradient(45deg, #74b9ff, #0984e3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.player-stats {
+    display: flex;
+    gap: 15px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-label {
+    display: block;
+    font-size: 12px;
+    color: #ccc;
+}
+
+.stat-value {
+    display: block;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.player-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.skill-tag {
+    background: rgba(116, 185, 255, 0.3);
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    border: 1px solid #74b9ff;
+}
+
+/* Улучшенный кубик */
+.dice-section {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 25px;
+    border-radius: 20px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    position: relative;
+}
+
+.dice-container {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
+}
+
+.dice {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(145deg, #ffffff, #f0f0f0);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 
+        0 10px 30px rgba(0, 0, 0, 0.4),
+        inset 3px 3px 8px rgba(255, 255, 255, 0.9),
+        inset -3px -3px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 2;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.dice-face {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dice-number {
+    font-size: 42px;
+    font-weight: bold;
+    color: #2d3436;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 3;
+}
+
+.dice-dots {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    padding: 8px;
+    gap: 4px;
+}
+
+.dice-dot {
+    width: 12px;
+    height: 12px;
+    background: #2d3436;
+    border-radius: 50%;
+    box-shadow: inset 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.dice-shadow {
+    position: absolute;
+    bottom: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85px;
+    height: 25px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    filter: blur(12px);
+    z-index: 1;
+    transition: all 0.3s ease;
+}
+
+.dice.rolling {
+    animation: rollDice 1.2s ease-in-out infinite;
+}
+
+.dice.rolling + .dice-shadow {
+    animation: shadowPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes rollDice {
+    0% { 
+        transform: rotate(0deg) scale(1) translateY(0px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    25% { 
+        transform: rotate(90deg) scale(1.1) translateY(-15px);
+        box-shadow: 0 20px 40px rgba(108, 92, 231, 0.6);
+    }
+    50% { 
+        transform: rotate(180deg) scale(1) translateY(0px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+    75% { 
+        transform: rotate(270deg) scale(1.1) translateY(-15px);
+        box-shadow: 0 20px 40px rgba(108, 92, 231, 0.6);
+    }
+    100% { 
+        transform: rotate(360deg) scale(1) translateY(0px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    }
+}
+
+@keyframes shadowPulse {
+    0%, 100% { 
+        width: 85px;
+        opacity: 0.4;
+    }
+    50% { 
+        width: 95px;
+        opacity: 0.6;
+    }
+}
+
+.roll-btn {
+    background: linear-gradient(45deg, #6c5ce7, #a29bfe);
+    border: none;
+    color: white;
+    padding: 15px 35px;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 20px rgba(108, 92, 231, 0.3);
+    margin-bottom: 15px;
+}
+
+.roll-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(108, 92, 231, 0.5);
+}
+
+.roll-btn:active {
+    transform: translateY(0px);
+}
+
+.roll-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.dice-result {
+    font-weight: bold;
+    font-size: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 12px 20px;
+    border-radius: 25px;
+    display: inline-block;
+    min-width: 180px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Тип клетки */
+.cell-section {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    transition: all 0.5s ease;
+}
+
+.cell-display {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.cell-icon {
+    font-size: 48px;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.cell-info {
+    flex: 1;
+}
+
+.cell-type {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.cell-description {
+    font-size: 14px;
+    opacity: 0.9;
+    line-height: 1.4;
+}
+
+/* Кнопка задания */
+.action-section {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.quest-btn {
+    background: linear-gradient(45deg, #00b894, #00a085);
+    border: none;
+    color: white;
+    padding: 15px 35px;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 20px rgba(0, 184, 148, 0.3);
+    width: 100%;
+}
+
+.quest-btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 184, 148, 0.5);
+}
+
+.quest-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Задания */
+.quest-section {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+    transition: all 0.5s ease;
+}
+
+.quest-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.quest-header h3 {
+    font-size: 18px;
+}
+
+.quest-difficulty {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.quest {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 20px;
+    border-radius: 12px;
+    border-left: 5px solid #6c5ce7;
+    margin-bottom: 15px;
+    font-size: 16px;
+    min-height: 80px;
+    display: flex;
+    align-items: center;
+    line-height: 1.5;
+}
+
+.quest-instructions, .quest-rewards {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    border-left: 3px solid;
+}
+
+.quest-instructions {
+    border-left-color: #74b9ff;
+}
+
+.quest-rewards {
+    border-left-color: #fdcb6e;
+}
+
+.quest-instructions h4, .quest-rewards h4 {
+    margin-bottom: 10px;
+    font-size: 14px;
+    color: #ddd;
+}
+
+.quest-instructions div, .quest-rewards div {
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+/* Кнопки выполнения */
+.completion-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.success-btn {
+    background: linear-gradient(45deg, #00b894, #00a085);
+    border: none;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.success-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+}
+
+.fail-btn {
+    background: linear-gradient(45deg, #ff7675, #d63031);
+    border: none;
+    color: white;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.fail-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 118, 117, 0.4);
+}
+
+/* История */
+.history-section {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.history-section h3 {
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.history {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.history-item {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    font-size: 13px;
+    border-left: 4px solid;
+    transition: all 0.3s ease;
+}
+
+.history-item:hover {
+    transform: translateX(5px);
+    background: rgba(0, 0, 0, 0.4);
+}
+
+/* Цветовые схемы для клеток */
+.cell-green { 
+    background: linear-gradient(45deg, rgba(0, 184, 148, 0.3), rgba(0, 160, 133, 0.2));
+    border: 2px solid #00b894;
+}
+.cell-blue { 
+    background: linear-gradient(45deg, rgba(116, 185, 255, 0.3), rgba(9, 132, 227, 0.2));
+    border: 2px solid #74b9ff;
+}
+.cell-yellow { 
+    background: linear-gradient(45deg, rgba(253, 203, 110, 0.3), rgba(243, 156, 18, 0.2));
+    border: 2px solid #fdcb6e;
+}
+.cell-purple { 
+    background: linear-gradient(45deg, rgba(108, 92, 231, 0.3), rgba(162, 155, 254, 0.2));
+    border: 2px solid #6c5ce7;
+}
+
+.cell-green .cell-icon { background: rgba(0, 184, 148, 0.3); }
+.cell-blue .cell-icon { background: rgba(116, 185, 255, 0.3); }
+.cell-yellow .cell-icon { background: rgba(253, 203, 110, 0.3); }
+.cell-purple .cell-icon { background: rgba(108, 92, 231, 0.3); }
+
+.history-item.green { border-left-color: #00b894; }
+.history-item.blue { border-left-color: #74b9ff; }
+.history-item.yellow { border-left-color: #fdcb6e; }
+.history-item.purple { border-left-color: #6c5ce7; }
+
+.difficulty-easy { color: #00b894; }
+.difficulty-medium { color: #fdcb6e; }
+.difficulty-hard { color: #ff7675; }
+.difficulty-epic { color: #6c5ce7; }
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+.hidden {
+    display: none;
+}
