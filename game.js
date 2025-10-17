@@ -46,18 +46,23 @@ class ProfessionalTrackGame {
         const color = colorSelect.value;
         
         if (!name) {
-            alert('Пожалуйста, введите имя игрока');
+            this.showMessage('Пожалуйста, введите имя игрока', 'warning');
+            return;
+        }
+        
+        if (this.players.length >= 6) {
+            this.showMessage('Максимальное количество игроков - 6', 'warning');
             return;
         }
         
         if (this.usedColors.has(color)) {
-            alert('Этот цвет уже занят. Выберите другой цвет.');
+            this.showMessage('Этот цвет уже занят. Выберите другой цвет.', 'warning');
             return;
         }
         
         // Создаем нового игрока
         const player = {
-            id: Date.now(),
+            id: Date.now() + Math.random(),
             name: name,
             color: color,
             position: 1,
@@ -77,11 +82,40 @@ class ProfessionalTrackGame {
         // Очищаем форму
         nameInput.value = '';
         nameInput.focus();
+        
+        this.showMessage(`Игрок ${name} добавлен!`, 'success');
+    }
+
+    showMessage(text, type = 'info') {
+        // Создаем временное уведомление
+        const message = document.createElement('div');
+        message.className = `message ${type}`;
+        message.textContent = text;
+        message.style.cssText = `
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: ${type === 'success' ? '#00b894' : type === 'warning' ? '#fdcb6e' : '#74b9ff'};
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        `;
+        
+        document.body.appendChild(message);
+        
+        // Удаляем сообщение через 3 секунды
+        setTimeout(() => {
+            message.remove();
+        }, 3000);
     }
 
     generateRandomSkills() {
         const skillIds = Object.keys(SKILLS);
-        const shuffled = skillIds.sort(() => 0.5 - Math.random());
+        const shuffled = [...skillIds].sort(() => 0.5 - Math.random());
         return shuffled.slice(0, 2);
     }
 
@@ -94,11 +128,28 @@ class ProfessionalTrackGame {
             
             this.updatePlayersList();
             this.updateStartButton();
+            
+            this.showMessage(`Игрок ${player.name} удален`, 'info');
         }
     }
 
     updatePlayersList() {
         const playersList = document.getElementById('playersList');
+        const playerCount = document.getElementById('playerCount');
+        
+        playerCount.textContent = `${this.players.length} игрок${this.getRussianPlural(this.players.length)}`;
+        
+        if (this.players.length === 0) {
+            playersList.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">👥</div>
+                    <div class="empty-text">Пока нет игроков</div>
+                    <div class="empty-subtext">Добавьте первого игрока чтобы начать</div>
+                </div>
+            `;
+            return;
+        }
+        
         playersList.innerHTML = '';
         
         this.players.forEach(player => {
@@ -117,6 +168,12 @@ class ProfessionalTrackGame {
         document.getElementById('totalPlayers').textContent = this.players.length;
     }
 
+    getRussianPlural(number) {
+        if (number % 10 === 1 && number % 100 !== 11) return '';
+        if ([2, 3, 4].includes(number % 10) && ![12, 13, 14].includes(number % 100)) return 'а';
+        return 'ов';
+    }
+
     updateStartButton() {
         const startBtn = document.getElementById('startGameBtn');
         startBtn.disabled = this.players.length < 2;
@@ -124,7 +181,7 @@ class ProfessionalTrackGame {
 
     startGame() {
         if (this.players.length < 2) {
-            alert('Для начала игры нужно минимум 2 игрока');
+            this.showMessage('Для начала игры нужно минимум 2 игрока', 'warning');
             return;
         }
         
@@ -139,13 +196,16 @@ class ProfessionalTrackGame {
         this.updateCurrentPlayer();
         this.updatePlayersTable();
         this.updateCurrentStep(`Ход ${this.currentTurn}. ${this.players[0].name}, ваш ход!`);
+        
+        this.showMessage('Игра началась! Удачи всем игрокам!', 'success');
     }
 
     updateCurrentPlayer() {
         const currentPlayer = this.players[this.currentPlayerIndex];
+        const playerColor = PLAYER_COLORS[currentPlayer.color];
         
         // Обновляем карточку текущего игрока
-        document.getElementById('currentPlayerAvatar').style.backgroundColor = PLAYER_COLORS[currentPlayer.color].hex;
+        document.getElementById('currentPlayerAvatar').style.backgroundColor = playerColor.hex;
         document.getElementById('currentPlayerName').textContent = currentPlayer.name;
         document.getElementById('currentPlayerReputation').textContent = currentPlayer.reputation;
         document.getElementById('currentPlayerLevel').textContent = CAREER_LEVELS[currentPlayer.careerLevel].name;
@@ -159,6 +219,11 @@ class ProfessionalTrackGame {
         
         this.updateCurrentStep(`Ход ${this.currentTurn}. ${currentPlayer.name}, бросьте кубик!`);
     }
+
+    // Остальные методы остаются такими же как в предыдущей версии...
+    // (hideDiceDots, createDiceDots, rollDice, finishRoll, getQuestForRoll, showQuest, displayQuest, 
+    // getCellTypeName, getCellTypeDescription, completeQuest, checkLevelUp, nextPlayer, updatePlayersTable,
+    // addToHistory, endGame, showResults, newGame, updateCurrentStep, showWelcomeState, resetQuestDisplay)
 
     hideDiceDots() {
         const diceDots = document.getElementById('diceDots');
@@ -199,7 +264,7 @@ class ProfessionalTrackGame {
         
         rollBtn.disabled = true;
         dice.classList.add('rolling');
-        diceResult.textContent = "Бросок...";
+        diceResult.querySelector('.result-text').textContent = "Бросок...";
         diceNumber.textContent = "?";
         this.hideDiceDots();
         
@@ -238,7 +303,7 @@ class ProfessionalTrackGame {
         
         diceNumber.textContent = result;
         this.createDiceDots(result);
-        diceResult.textContent = `Выпало: ${result}`;
+        diceResult.querySelector('.result-text').textContent = `Результат: ${result}`;
         
         // Определяем тип клетки и получаем задание
         this.getQuestForRoll(result);
@@ -309,7 +374,7 @@ class ProfessionalTrackGame {
             rewardsElement.innerHTML = quest.rewards.map(reward => `• ${reward}`).join('<br>');
             
             const difficulty = quest.difficulty;
-            difficultyElement.textContent = `Сложность: ${difficulty}`;
+            difficultyElement.querySelector('.difficulty-text').textContent = `Сложность: ${difficulty}`;
             difficultyElement.className = `quest-difficulty difficulty-${difficulty}`;
             
             questElement.style.opacity = '1';
@@ -373,9 +438,10 @@ class ProfessionalTrackGame {
         
         // Обновляем интерфейс
         this.updatePlayersTable();
+        this.updateCurrentPlayer();
         
         // Показываем сообщение о результате
-        alert(message);
+        this.showMessage(message, success ? 'success' : 'info');
         
         // Автоматически переходим к следующему игроку через 2 секунды
         setTimeout(() => {
@@ -388,10 +454,7 @@ class ProfessionalTrackGame {
         for (const [level, info] of levels) {
             if (player.reputation >= info.reputation && level !== player.careerLevel) {
                 player.careerLevel = level;
-                
-                if (level === 'specialist' || level === 'expert' || level === 'leader') {
-                    // Сообщение о повышении уровня показывается в основном сообщении
-                }
+                this.showMessage(`🎉 ${player.name} достиг уровня "${info.name}"!`, 'success');
                 break;
             }
         }
@@ -418,18 +481,10 @@ class ProfessionalTrackGame {
 
     updatePlayersTable() {
         const playersTable = document.getElementById('playersTable');
-        playersTable.innerHTML = '';
         
-        // Заголовок таблицы
-        const headerRow = document.createElement('div');
-        headerRow.className = 'table-row table-header';
-        headerRow.innerHTML = `
-            <div class="table-cell">#</div>
-            <div class="table-cell">Игрок</div>
-            <div class="table-cell">Уровень</div>
-            <div class="table-cell">Репутация</div>
-        `;
-        playersTable.appendChild(headerRow);
+        // Очищаем только строки с игроками, оставляя заголовок
+        const existingRows = playersTable.querySelectorAll('.table-row:not(.table-header)');
+        existingRows.forEach(row => row.remove());
         
         // Данные игроков
         this.players.forEach((player, index) => {
@@ -449,6 +504,14 @@ class ProfessionalTrackGame {
     }
 
     addToHistory(player, success, reputationChange) {
+        const history = document.getElementById('history');
+        
+        // Убираем пустое состояние если оно есть
+        const emptyState = history.querySelector('.empty-history');
+        if (emptyState) {
+            emptyState.remove();
+        }
+        
         const historyItem = document.createElement('div');
         historyItem.className = `history-item ${player.color}`;
         
@@ -460,7 +523,6 @@ class ProfessionalTrackGame {
             <small>${resultIcon} ${changeText} | Уровень: ${CAREER_LEVELS[player.careerLevel].name}</small>
         `;
         
-        const history = document.getElementById('history');
         history.insertBefore(historyItem, history.firstChild);
         
         // Сохраняем в массив истории
@@ -475,8 +537,9 @@ class ProfessionalTrackGame {
         // Ограничиваем историю 10 последними записями
         if (this.gameHistory.length > 10) {
             this.gameHistory.pop();
-            if (history.children.length > 10) {
-                history.removeChild(history.lastChild);
+            const historyItems = history.querySelectorAll('.history-item');
+            if (historyItems.length > 10) {
+                historyItems[historyItems.length - 1].remove();
             }
         }
     }
@@ -499,6 +562,7 @@ class ProfessionalTrackGame {
     showResults(winner) {
         const winnerCard = document.getElementById('winnerCard');
         const finalResults = document.getElementById('finalResults');
+        const winnerColor = PLAYER_COLORS[winner.color];
         
         // Победитель
         winnerCard.innerHTML = `
@@ -537,12 +601,26 @@ class ProfessionalTrackGame {
         // Сброс интерфейса
         document.getElementById('resultsSection').style.display = 'none';
         document.getElementById('setupSection').style.display = 'block';
-        document.getElementById('playersList').innerHTML = '';
+        document.getElementById('playersList').innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">👥</div>
+                <div class="empty-text">Пока нет игроков</div>
+                <div class="empty-subtext">Добавьте первого игрока чтобы начать</div>
+            </div>
+        `;
         document.getElementById('playerNameInput').value = '';
-        document.getElementById('history').innerHTML = '';
+        document.getElementById('history').innerHTML = `
+            <div class="empty-history">
+                <div class="empty-icon">📝</div>
+                <div class="empty-text">История пока пуста</div>
+                <div class="empty-subtext">Здесь будут отображаться действия игроков</div>
+            </div>
+        `;
         
         this.updateStartButton();
         this.showWelcomeState();
+        
+        this.showMessage('Новая игра готова к настройке!', 'success');
     }
 
     updateCurrentStep(text) {
@@ -552,7 +630,7 @@ class ProfessionalTrackGame {
     showWelcomeState() {
         this.updateCurrentStep("Добавьте игроков для начала игры");
         document.getElementById('diceNumber').textContent = "?";
-        document.getElementById('diceResult').textContent = "Результат: -";
+        document.getElementById('diceResult').querySelector('.result-text').textContent = "Результат: -";
         
         this.hideDiceDots();
         this.resetQuestDisplay();
@@ -565,9 +643,9 @@ class ProfessionalTrackGame {
         const difficultyElement = document.getElementById('questDifficulty');
         
         questElement.textContent = "Бросьте кубик для получения задания!";
-        instructionsElement.textContent = "• Бросьте кубик для определения типа клетки\n• Выполните профессиональное задание\n• Получите репутацию и развивайтесь";
-        rewardsElement.textContent = "• Репутация и профессиональный рост\n• Новые навыки и компетенции\n• Карьерное развитие";
-        difficultyElement.textContent = "Сложность: -";
+        instructionsElement.innerHTML = '<div class="empty-instruction">-</div>';
+        rewardsElement.innerHTML = '<div class="empty-reward">-</div>';
+        difficultyElement.querySelector('.difficulty-text').textContent = "Сложность: -";
     }
 }
 
