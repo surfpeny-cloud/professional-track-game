@@ -4,10 +4,27 @@
     box-sizing: border-box;
 }
 
+:root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --success-gradient: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+    --danger-gradient: linear-gradient(135deg, #ff7675 0%, #d63031 100%);
+    --warning-gradient: linear-gradient(135deg, #fdcb6e 0%, #f39c12 100%);
+    --info-gradient: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+    --dark-bg: #1a1a2e;
+    --darker-bg: #16213e;
+    --card-bg: rgba(255, 255, 255, 0.1);
+    --text-primary: #ffffff;
+    --text-secondary: #dfe6e9;
+    --text-muted: #a29bfe;
+    --border-radius: 16px;
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    --transition: all 0.3s ease;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    color: white;
+    background: linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 100%);
+    color: var(--text-primary);
     min-height: 100vh;
     padding: 10px;
     line-height: 1.6;
@@ -20,76 +37,151 @@ body {
 
 /* Заголовок */
 .header {
-    text-align: center;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--card-bg);
     padding: 20px;
-    border-radius: 15px;
+    border-radius: var(--border-radius);
     margin-bottom: 20px;
     backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--primary-gradient);
+}
+
+.header-content {
+    text-align: center;
+    position: relative;
+    z-index: 2;
 }
 
 .header h1 {
     font-size: 24px;
     margin-bottom: 5px;
-    background: linear-gradient(45deg, #00b894, #0984e3);
+    background: var(--primary-gradient);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+    font-weight: 700;
 }
 
 .subtitle {
     font-size: 16px;
-    color: #a29bfe;
+    color: var(--text-muted);
     margin-bottom: 10px;
-    font-weight: bold;
+    font-weight: 600;
 }
 
 .current-step {
     font-size: 14px;
-    color: #dfe6e9;
-    font-weight: bold;
+    color: var(--text-secondary);
+    font-weight: 500;
 }
 
-/* Настройка игры */
-.setup-section {
-    background: rgba(255, 255, 255, 0.1);
+.header-decoration {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+    font-size: 24px;
+    opacity: 0.7;
+}
+
+/* Карточки */
+.setup-card, .info-card, .current-player-card, .status-card, .quest-card, .detail-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
     padding: 20px;
-    border-radius: 15px;
     margin-bottom: 20px;
     backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: var(--shadow);
 }
 
-.setup-form h3 {
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
-    text-align: center;
-    color: #74b9ff;
 }
 
+.card-header h3 {
+    color: var(--text-primary);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.player-count {
+    background: var(--primary-gradient);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Формы */
 .form-group {
     margin-bottom: 20px;
 }
 
-.form-group label {
+.form-label {
     display: block;
-    margin-bottom: 10px;
-    font-weight: bold;
-    color: #dfe6e9;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: 14px;
 }
 
 .players-list {
-    margin-bottom: 15px;
-    max-height: 200px;
+    margin-bottom: 20px;
+    max-height: 300px;
     overflow-y: auto;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-muted);
+}
+
+.empty-icon {
+    font-size: 48px;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
+.empty-text {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.empty-subtext {
+    font-size: 14px;
+    opacity: 0.7;
 }
 
 .player-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(255, 255, 255, 0.1);
-    padding: 12px;
-    border-radius: 10px;
-    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
     border-left: 4px solid;
+    transition: var(--transition);
+}
+
+.player-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
 }
 
 .player-item.red { border-left-color: #ff6b6b; }
@@ -102,13 +194,14 @@ body {
 .player-info {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
 }
 
 .player-color {
     width: 20px;
     height: 20px;
     border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 .player-color.red { background: #ff6b6b; }
@@ -122,120 +215,231 @@ body {
     background: #ff7675;
     border: none;
     color: white;
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 14px;
+    font-weight: bold;
+    transition: var(--transition);
 }
 
-.add-player-form {
+.remove-player:hover {
+    transform: scale(1.1);
+    background: #d63031;
+}
+
+.add-player-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px dashed rgba(255, 255, 255, 0.2);
+}
+
+.input-group {
     display: grid;
-    grid-template-columns: 1fr auto auto;
+    grid-template-columns: 1fr auto;
     gap: 10px;
-    align-items: center;
+    margin-bottom: 15px;
 }
 
 .player-input {
-    padding: 10px;
-    border-radius: 8px;
+    padding: 12px 16px;
+    border-radius: 12px;
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid rgba(255, 255, 255, 0.2);
-    color: white;
-    font-size: 14px;
+    color: var(--text-primary);
+    font-size: 16px;
+    transition: var(--transition);
+}
+
+.player-input:focus {
+    outline: none;
+    border-color: #74b9ff;
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.player-input::placeholder {
+    color: var(--text-muted);
 }
 
 .color-select {
-    padding: 10px;
-    border-radius: 8px;
+    padding: 12px 16px;
+    border-radius: 12px;
     background: rgba(255, 255, 255, 0.1);
     border: 2px solid rgba(255, 255, 255, 0.2);
+    color: var(--text-primary);
+    font-size: 16px;
+    min-width: 120px;
+    transition: var(--transition);
+}
+
+.color-select:focus {
+    outline: none;
+    border-color: #74b9ff;
+}
+
+/* Кнопки */
+.add-btn, .start-btn, .roll-btn, .next-btn, .success-btn, .fail-btn, .end-btn, .new-game-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
     color: white;
-    font-size: 14px;
+    padding: 15px 20px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    width: 100%;
+    position: relative;
+    overflow: hidden;
 }
 
 .add-btn {
-    background: #00b894;
-    border: none;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    white-space: nowrap;
-}
-
-.game-info {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-}
-
-.game-info h4 {
-    margin-bottom: 10px;
-    color: #74b9ff;
-}
-
-.game-info ul {
-    padding-left: 20px;
-}
-
-.game-info li {
-    margin-bottom: 5px;
-    font-size: 14px;
+    background: var(--success-gradient);
 }
 
 .start-btn {
-    width: 100%;
-    background: linear-gradient(45deg, #00b894, #00a085);
-    border: none;
-    color: white;
-    padding: 15px;
-    border-radius: 30px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 20px rgba(0, 184, 148, 0.3);
+    background: var(--primary-gradient);
+    position: relative;
 }
 
-.start-btn:hover:not(:disabled) {
+.roll-btn {
+    background: var(--primary-gradient);
+}
+
+.next-btn {
+    background: var(--warning-gradient);
+}
+
+.success-btn {
+    background: var(--success-gradient);
+}
+
+.fail-btn {
+    background: var(--danger-gradient);
+}
+
+.end-btn {
+    background: var(--danger-gradient);
+}
+
+.new-game-btn {
+    background: var(--primary-gradient);
+}
+
+.btn-icon {
+    font-size: 18px;
+}
+
+.btn-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ff7675;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+/* Ховер-эффекты для кнопок */
+.add-btn:hover, .start-btn:hover, .roll-btn:hover, .next-btn:hover, 
+.success-btn:hover, .fail-btn:hover, .end-btn:hover, .new-game-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 184, 148, 0.5);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+.add-btn:active, .start-btn:active, .roll-btn:active, .next-btn:active, 
+.success-btn:active, .fail-btn:active, .end-btn:active, .new-game-btn:active {
+    transform: translateY(0);
 }
 
 .start-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
+}
+
+/* Информационная карточка */
+.info-card {
+    background: rgba(116, 185, 255, 0.1);
+    border: 1px solid rgba(116, 185, 255, 0.3);
+}
+
+.info-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.info-icon {
+    font-size: 20px;
+}
+
+.info-header h4 {
+    color: var(--text-primary);
+    font-size: 16px;
+}
+
+.tip-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tip-item:last-child {
+    border-bottom: none;
+}
+
+.tip-number {
+    background: var(--primary-gradient);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 600;
 }
 
 /* Текущий игрок */
 .current-player-section {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 15px;
-    border-radius: 15px;
     margin-bottom: 20px;
-    backdrop-filter: blur(10px);
 }
 
 .current-player-card {
     display: flex;
     align-items: center;
     gap: 15px;
-    margin-bottom: 10px;
+    background: var(--primary-gradient);
+    position: relative;
+    overflow: hidden;
+}
+
+.glow {
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
 }
 
 .player-avatar {
-    font-size: 40px;
     width: 60px;
     height: 60px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    background: rgba(116, 185, 255, 0.3);
+    font-size: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
 }
 
 .player-info {
@@ -243,83 +447,117 @@ body {
 }
 
 .player-name {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 5px;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 8px;
 }
 
 .player-stats {
     display: flex;
-    gap: 15px;
+    gap: 10px;
 }
 
-.stat {
+.stat-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 20px;
     font-size: 14px;
-    color: #dfe6e9;
+    font-weight: 600;
+}
+
+.stat-icon {
+    font-size: 14px;
 }
 
 .turn-indicator {
-    text-align: center;
-    background: linear-gradient(45deg, #6c5ce7, #a29bfe);
-    padding: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
     border-radius: 20px;
-    font-weight: bold;
+    font-weight: 600;
     font-size: 14px;
+}
+
+.pulse {
+    width: 8px;
+    height: 8px;
+    background: #00b894;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(1.2); }
+    100% { opacity: 1; transform: scale(1); }
 }
 
 /* Статус игры */
 .game-status {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 15px;
-    border-radius: 15px;
     margin-bottom: 20px;
-    backdrop-filter: blur(10px);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
 }
 
-.status-item {
-    text-align: center;
+.status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.status-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px;
+}
+
+.status-icon {
+    font-size: 24px;
+    opacity: 0.8;
+}
+
+.status-content {
+    flex: 1;
 }
 
 .status-label {
-    display: block;
     font-size: 12px;
-    color: #ccc;
-    margin-bottom: 5px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
 }
 
 .status-value {
-    display: block;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 18px;
+    font-weight: 700;
 }
 
-.next-btn {
-    background: linear-gradient(45deg, #fd79a8, #e84393);
-    border: none;
-    color: white;
-    padding: 10px 15px;
-    border-radius: 20px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.next-btn:hover {
-    transform: translateY(-2px);
-}
-
-/* Улучшенный кубик */
+/* Кубик */
 .dice-section {
     text-align: center;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--card-bg);
     padding: 25px;
-    border-radius: 20px;
+    border-radius: var(--border-radius);
     margin-bottom: 20px;
     backdrop-filter: blur(10px);
-    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section-header h3 {
+    color: var(--text-primary);
+    font-size: 18px;
+    font-weight: 600;
 }
 
 .dice-container {
@@ -340,7 +578,7 @@ body {
         0 10px 30px rgba(0, 0, 0, 0.4),
         inset 3px 3px 8px rgba(255, 255, 255, 0.9),
         inset -3px -3px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
+    transition: var(--transition);
     position: relative;
     z-index: 2;
     border: 2px solid rgba(255, 255, 255, 0.8);
@@ -395,7 +633,7 @@ body {
     border-radius: 50%;
     filter: blur(12px);
     z-index: 1;
-    transition: all 0.3s ease;
+    transition: var(--transition);
 }
 
 .dice.rolling {
@@ -440,54 +678,34 @@ body {
     }
 }
 
-.roll-btn {
-    background: linear-gradient(45deg, #6c5ce7, #a29bfe);
-    border: none;
-    color: white;
-    padding: 15px 35px;
-    border-radius: 30px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 5px 20px rgba(108, 92, 231, 0.3);
-    margin-bottom: 15px;
-}
-
-.roll-btn:hover:not(:disabled) {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(108, 92, 231, 0.5);
-}
-
-.roll-btn:active {
-    transform: translateY(0px);
-}
-
-.roll-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
 .dice-result {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     font-weight: bold;
-    font-size: 20px;
+    font-size: 18px;
     background: rgba(255, 255, 255, 0.1);
     padding: 12px 20px;
     border-radius: 25px;
-    display: inline-block;
+    display: inline-flex;
     min-width: 180px;
     border: 2px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Тип клетки */
+.result-icon {
+    font-size: 16px;
+}
+
+/* Продолжение в следующем сообщении... *//* Клетка */
 .cell-section {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--card-bg);
     padding: 20px;
-    border-radius: 15px;
+    border-radius: var(--border-radius);
     margin-bottom: 20px;
     backdrop-filter: blur(10px);
-    transition: all 0.5s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: var(--transition);
 }
 
 .cell-display {
@@ -512,8 +730,8 @@ body {
 }
 
 .cell-type {
-    font-size: 20px;
-    font-weight: bold;
+    font-size: 18px;
+    font-weight: 700;
     margin-bottom: 5px;
 }
 
@@ -526,132 +744,115 @@ body {
 
 .cell-position {
     font-size: 12px;
-    color: #ccc;
+    color: var(--text-muted);
+    font-weight: 600;
 }
 
 /* Задания */
 .quest-section {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--card-bg);
     padding: 20px;
-    border-radius: 15px;
+    border-radius: var(--border-radius);
     margin-bottom: 20px;
     backdrop-filter: blur(10px);
-    transition: all 0.5s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.quest-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
+.quest-card {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    border-left: 4px solid #6c5ce7;
+    margin-bottom: 20px;
 }
 
-.quest-header h3 {
-    font-size: 18px;
-}
-
-.quest-difficulty {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: bold;
+.quest-content {
+    padding: 20px;
 }
 
 .quest {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 20px;
-    border-radius: 12px;
-    border-left: 5px solid #6c5ce7;
-    margin-bottom: 15px;
     font-size: 16px;
-    min-height: 80px;
+    line-height: 1.5;
+    text-align: center;
+}
+
+.quest-details {
+    display: grid;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.detail-card {
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.detail-card.instructions {
+    background: rgba(116, 185, 255, 0.1);
+    border-left: 4px solid #74b9ff;
+}
+
+.detail-card.rewards {
+    background: rgba(253, 203, 110, 0.1);
+    border-left: 4px solid #fdcb6e;
+}
+
+.detail-header {
     display: flex;
     align-items: center;
-    line-height: 1.5;
+    gap: 10px;
+    margin-bottom: 12px;
 }
 
-.quest-instructions, .quest-rewards {
-    background: rgba(0, 0, 0, 0.2);
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    border-left: 3px solid;
+.detail-icon {
+    font-size: 18px;
 }
 
-.quest-instructions {
-    border-left-color: #74b9ff;
-}
-
-.quest-rewards {
-    border-left-color: #fdcb6e;
-}
-
-.quest-instructions h4, .quest-rewards h4 {
-    margin-bottom: 10px;
+.detail-header h4 {
     font-size: 14px;
-    color: #ddd;
+    color: var(--text-secondary);
 }
 
-.quest-instructions div, .quest-rewards div {
+.detail-content {
     font-size: 14px;
     line-height: 1.5;
+}
+
+.empty-instruction, .empty-reward {
+    color: var(--text-muted);
+    font-style: italic;
+}
+
+.quest-difficulty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.difficulty-icon {
+    font-size: 14px;
 }
 
 /* Кнопки выполнения */
 .completion-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 12px;
     margin-top: 20px;
-}
-
-.success-btn {
-    background: linear-gradient(45deg, #00b894, #00a085);
-    border: none;
-    color: white;
-    padding: 15px;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.success-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
-}
-
-.fail-btn {
-    background: linear-gradient(45deg, #ff7675, #d63031);
-    border: none;
-    color: white;
-    padding: 15px;
-    border-radius: 10px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.fail-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(255, 118, 117, 0.4);
 }
 
 /* Таблица игроков */
 .players-table-section {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--card-bg);
     padding: 20px;
-    border-radius: 15px;
+    border-radius: var(--border-radius);
     margin-bottom: 20px;
     backdrop-filter: blur(10px);
-}
-
-.players-table-section h3 {
-    margin-bottom: 15px;
-    font-size: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .players-table {
@@ -659,45 +860,72 @@ body {
     gap: 8px;
 }
 
-.table-row {
+.table-header {
     display: grid;
-    grid-template-columns: 30px 1fr 60px 80px;
-    gap: 10px;
+    grid-template-columns: 30px 1fr 80px 70px;
+    gap: 12px;
     align-items: center;
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
+    padding: 12px 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--text-muted);
 }
 
-.table-header {
-    background: rgba(255, 255, 255, 0.2);
-    font-weight: bold;
-    font-size: 12px;
+.table-row {
+    display: grid;
+    grid-template-columns: 30px 1fr 80px 70px;
+    gap: 12px;
+    align-items: center;
+    padding: 12px 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    transition: var(--transition);
+}
+
+.table-row:hover {
+    background: rgba(0, 0, 0, 0.4);
+    transform: translateX(5px);
+}
+
+.table-row.current-turn {
+    background: rgba(108, 92, 231, 0.3);
+    border: 2px solid #6c5ce7;
 }
 
 .table-cell {
     text-align: center;
+    font-size: 14px;
+}
+
+.table-cell:first-child {
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.table-cell:nth-child(2) {
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .player-color-small {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    margin: 0 auto;
+    border: 2px solid rgba(255, 255, 255, 0.3);
 }
 
 /* История */
 .history-section {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--card-bg);
     padding: 20px;
-    border-radius: 15px;
+    border-radius: var(--border-radius);
     margin-bottom: 20px;
     backdrop-filter: blur(10px);
-}
-
-.history-section h3 {
-    margin-bottom: 15px;
-    font-size: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .history {
@@ -705,14 +933,20 @@ body {
     overflow-y: auto;
 }
 
+.empty-history {
+    text-align: center;
+    padding: 30px 20px;
+    color: var(--text-muted);
+}
+
 .history-item {
     background: rgba(0, 0, 0, 0.3);
-    padding: 12px;
-    margin-bottom: 8px;
-    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
     font-size: 13px;
     border-left: 4px solid;
-    transition: all 0.3s ease;
+    transition: var(--transition);
 }
 
 .history-item:hover {
@@ -723,85 +957,72 @@ body {
 /* Управление игрой */
 .game-controls {
     text-align: center;
-}
-
-.end-btn {
-    background: linear-gradient(45deg, #e17055, #d63031);
-    border: none;
-    color: white;
-    padding: 15px 30px;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.end-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(225, 112, 85, 0.4);
+    margin-bottom: 20px;
 }
 
 /* Результаты */
 .results-section {
-    background: rgba(255, 255, 255, 0.1);
-    padding: 20px;
-    border-radius: 15px;
+    background: var(--card-bg);
+    padding: 30px 20px;
+    border-radius: var(--border-radius);
     backdrop-filter: blur(10px);
-}
-
-.results-container {
+    border: 1px solid rgba(255, 255, 255, 0.1);
     text-align: center;
 }
 
-.results-container h2 {
-    margin-bottom: 20px;
-    color: #74b9ff;
+.results-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.trophy, .confetti {
+    font-size: 32px;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+
+.results-header h2 {
+    font-size: 24px;
+    font-weight: 700;
+    background: var(--primary-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .winner-card {
-    background: linear-gradient(45deg, #fdcb6e, #e17055);
-    padding: 20px;
+    background: var(--warning-gradient);
+    padding: 25px;
     border-radius: 15px;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 8px 32px rgba(253, 203, 110, 0.3);
 }
 
 .final-results {
-    margin-bottom: 20px;
-}
-
-.new-game-btn {
-    background: linear-gradient(45deg, #00b894, #00a085);
-    border: none;
-    color: white;
-    padding: 15px 30px;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.new-game-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 184, 148, 0.4);
+    margin-bottom: 25px;
 }
 
 /* Цветовые схемы для клеток */
 .cell-green { 
-    background: linear-gradient(45deg, rgba(0, 184, 148, 0.3), rgba(0, 160, 133, 0.2));
+    background: linear-gradient(45deg, rgba(0, 184, 148, 0.2), rgba(0, 160, 133, 0.1));
     border: 2px solid #00b894;
 }
 .cell-blue { 
-    background: linear-gradient(45deg, rgba(116, 185, 255, 0.3), rgba(9, 132, 227, 0.2));
+    background: linear-gradient(45deg, rgba(116, 185, 255, 0.2), rgba(9, 132, 227, 0.1));
     border: 2px solid #74b9ff;
 }
 .cell-yellow { 
-    background: linear-gradient(45deg, rgba(253, 203, 110, 0.3), rgba(243, 156, 18, 0.2));
+    background: linear-gradient(45deg, rgba(253, 203, 110, 0.2), rgba(243, 156, 18, 0.1));
     border: 2px solid #fdcb6e;
 }
 .cell-purple { 
-    background: linear-gradient(45deg, rgba(108, 92, 231, 0.3), rgba(162, 155, 254, 0.2));
+    background: linear-gradient(45deg, rgba(108, 92, 231, 0.2), rgba(162, 155, 254, 0.1));
     border: 2px solid #6c5ce7;
 }
 
@@ -810,10 +1031,12 @@ body {
 .cell-yellow .cell-icon { background: rgba(253, 203, 110, 0.3); }
 .cell-purple .cell-icon { background: rgba(108, 92, 231, 0.3); }
 
-.history-item.green { border-left-color: #00b894; }
+.history-item.red { border-left-color: #ff6b6b; }
 .history-item.blue { border-left-color: #74b9ff; }
+.history-item.green { border-left-color: #00b894; }
 .history-item.yellow { border-left-color: #fdcb6e; }
 .history-item.purple { border-left-color: #6c5ce7; }
+.history-item.orange { border-left-color: #fd9644; }
 
 .difficulty-easy { color: #00b894; }
 .difficulty-medium { color: #fdcb6e; }
@@ -834,7 +1057,50 @@ body {
     display: none;
 }
 
-.current-turn {
-    background: rgba(108, 92, 231, 0.3) !important;
-    border: 2px solid #6c5ce7;
+/* Полоса прокрутки */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Адаптивность */
+@media (max-width: 380px) {
+    .app {
+        padding: 5px;
+    }
+    
+    .header h1 {
+        font-size: 20px;
+    }
+    
+    .input-group {
+        grid-template-columns: 1fr;
+    }
+    
+    .status-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .completion-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .table-header, .table-row {
+        grid-template-columns: 25px 1fr 70px 60px;
+        gap: 8px;
+        font-size: 12px;
+    }
 }
