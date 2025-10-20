@@ -370,3 +370,17 @@
     <script src="game.js"></script>
 </body>
 </html>
+
+<script>
+// СУПЕР ПРОСТОЙ ТЕСТ
+document.getElementById('addPlayerBtn').onclick = function() {
+    const name = document.getElementById('playerNameInput').value;
+    alert('Кнопка работает! Введено имя: ' + name);
+    
+    // Просто добавляем игрока без классов
+    const player = {name: name, color: 'red'};
+    const div = document.createElement('div');
+    div.innerHTML = `Игрок: ${name} <button onclick="this.parentElement.remove()">X</button>`;
+    document.getElementById('playersList').appendChild(div);
+};
+</script>
