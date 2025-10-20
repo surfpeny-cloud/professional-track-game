@@ -1,244 +1,148 @@
-// ===== PREMIUM GAME CLASS =====
+// ===== ПРОСТАЯ РАБОЧАЯ ВЕРСИЯ GAME.JS =====
+console.log('🎮 game.js загружается...');
+
 class ProfessionalTrackGame {
     constructor() {
+        console.log('🔄 Создание экземпляра игры...');
         this.players = [];
         this.currentPlayerIndex = 0;
         this.currentTurn = 1;
         this.gameState = 'setup';
-        this.history = [];
-        this.diceValue = 0;
-        this.currentQuest = null;
-        this.currentCellType = null;
-        this.telegramUser = null;
-        this.isRolling = false;
         
-        this.initializeEventListeners();
-        this.initializeTelegram();
-        this.loadFromStorage();
+        this.init();
     }
 
-    // ===== ИСПРАВЛЕННАЯ ИНИЦИАЛИЗАЦИЯ =====
-    initializeEventListeners() {
-        console.log('🔄 Инициализация обработчиков событий...');
+    init() {
+        console.log('🚀 Инициализация игры...');
+        this.bindEvents();
+        this.loadFromStorage();
+        this.updateUI();
+        console.log('✅ Игра инициализирована');
+    }
+
+    bindEvents() {
+        console.log('🔗 Привязка событий...');
         
-        // Основная кнопка добавления игрока
-        const addPlayerBtn = document.getElementById('addPlayerBtn');
-        if (addPlayerBtn) {
-            addPlayerBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                console.log('🎯 Кнопка добавления нажата');
+        // Кнопка добавления игрока - САМАЯ ПРОСТАЯ ВЕРСИЯ
+        const addBtn = document.getElementById('addPlayerBtn');
+        if (addBtn) {
+            console.log('✅ Кнопка добавления найдена');
+            addBtn.addEventListener('click', () => {
+                console.log('🎯 Кнопка нажата!');
                 this.addPlayer();
             });
         } else {
-            console.error('❌ Кнопка addPlayerBtn не найдена');
+            console.error('❌ Кнопка добавления не найдена!');
         }
 
-        // Ввод по Enter
-        const playerNameInput = document.getElementById('playerNameInput');
-        if (playerNameInput) {
-            playerNameInput.addEventListener('keypress', (e) => {
+        // Enter в поле ввода
+        const nameInput = document.getElementById('playerNameInput');
+        if (nameInput) {
+            nameInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
-                    e.preventDefault();
-                    console.log('⌨️ Enter нажат');
                     this.addPlayer();
                 }
             });
-
-            // Валидация в реальном времени
-            playerNameInput.addEventListener('input', this.debounce(() => {
-                this.validatePlayerName();
-            }, 300));
         }
 
         // Остальные кнопки
-        this.setupButton('startGameBtn', () => this.startGame());
-        this.setupButton('rollBtn', () => this.rollDice());
-        this.setupButton('nextPlayerBtn', () => this.nextPlayer());
-        this.setupButton('successBtn', () => this.completeQuest(true));
-        this.setupButton('failBtn', () => this.completeQuest(false));
-        this.setupButton('shopBtn', () => this.openShop());
-        this.setupButton('closeShopBtn', () => this.closeShop());
-        this.setupButton('endGameBtn', () => this.endGame());
-        this.setupButton('newGameBtn', () => this.newGame());
-
-        // Модальные окна
-        this.setupButton('modalCloseBtn', () => this.closeItemModal());
-        
-        const itemModal = document.getElementById('itemModal');
-        if (itemModal) {
-            itemModal.addEventListener('click', (e) => {
-                if (e.target.id === 'itemModal') this.closeItemModal();
-            });
-        }
-
-        console.log('✅ Все обработчики инициализированы');
+        this.safeBind('startGameBtn', () => this.startGame());
+        this.safeBind('rollBtn', () => this.rollDice());
+        this.safeBind('nextPlayerBtn', () => this.nextPlayer());
+        this.safeBind('successBtn', () => this.completeQuest(true));
+        this.safeBind('failBtn', () => this.completeQuest(false));
     }
 
-    setupButton(elementId, handler) {
+    safeBind(elementId, handler) {
         const element = document.getElementById(elementId);
         if (element) {
             element.addEventListener('click', handler);
-        } else {
-            console.warn(`⚠️ Элемент ${elementId} не найден`);
         }
     }
 
-    // ===== ИСПРАВЛЕННЫЙ МЕТОД ДОБАВЛЕНИЯ ИГРОКА =====
+    // ===== ОСНОВНОЙ МЕТОД ДОБАВЛЕНИЯ ИГРОКА =====
     addPlayer() {
-        console.log('👤 Начало добавления игрока...');
+        console.log('👤 addPlayer() вызван');
         
+        // Получаем элементы
         const nameInput = document.getElementById('playerNameInput');
         const colorSelect = document.getElementById('playerColorSelect');
         
         if (!nameInput || !colorSelect) {
             console.error('❌ Не найдены элементы формы');
-            this.showNotification('Ошибка формы', 'error');
+            alert('Ошибка: форма не найдена');
             return;
         }
-        
+
         const name = nameInput.value.trim();
         const color = colorSelect.value;
-        
-        console.log(`📝 Данные: имя="${name}", цвет="${color}"`);
-        
-        // Валидация имени
+
+        console.log(`📝 Введенные данные: "${name}", цвет: ${color}`);
+
+        // Простая валидация
         if (!name) {
-            this.showNotification('Введите имя игрока', 'error');
-            this.animateError(nameInput);
+            alert('Введите имя игрока');
+            nameInput.focus();
             return;
         }
-        
-        if (name.length < 2) {
-            this.showNotification('Имя должно содержать минимум 2 символа', 'warning');
-            this.animateError(nameInput);
+
+        if (this.players.length >= 6) {
+            alert('Максимум 6 игроков');
             return;
         }
-        
-        if (name.length > 20) {
-            this.showNotification('Имя не должно превышать 20 символов', 'warning');
-            this.animateError(nameInput);
-            return;
-        }
-        
-        // Проверка лимита игроков
-        if (this.players.length >= GAME_CONFIG.maxPlayers) {
-            this.showNotification(`Максимум ${GAME_CONFIG.maxPlayers} игроков`, 'warning');
-            return;
-        }
-        
-        // Проверка уникальности имени
+
+        // Проверка уникальности
         if (this.players.some(player => player.name.toLowerCase() === name.toLowerCase())) {
-            this.showNotification('Игрок с таким именем уже существует', 'error');
-            this.animateError(nameInput);
+            alert('Игрок с таким именем уже существует');
+            nameInput.focus();
             return;
         }
-        
-        // Создание игрока
+
+        // Создаем игрока
         const player = {
-            id: this.generateId(),
+            id: Date.now().toString(),
             name: name,
             color: color,
-            reputation: GAME_CONFIG.startingReputation,
+            reputation: 3,
             level: 'intern',
-            skills: [],
-            inventory: [],
-            position: 0,
-            turns: 0,
-            completedQuests: 0,
-            failedQuests: 0,
-            maxSkills: 2
+            position: 0
         };
-        
-        console.log('🎮 Создан новый игрок:', player);
-        
-        // Анимация добавления
-        this.animatePlayerAddition(player);
-        
-        // Добавление в массив
+
+        console.log('🎮 Создан игрок:', player);
+
+        // Добавляем в массив
         this.players.push(player);
         
-        // Обновление интерфейса
+        // Обновляем интерфейс
         this.updatePlayersList();
         this.updateStartButton();
         
-        // Сброс формы
-        this.resetForm(nameInput, colorSelect);
+        // Очищаем поле ввода
+        nameInput.value = '';
+        nameInput.focus();
         
-        // Уведомление
-        this.showNotification(`🎉 Игрок "${name}" добавлен!`, 'success');
+        // Показываем уведомление
+        this.showMessage(`Игрок "${name}" добавлен!`, 'success');
         
-        // Сохранение
+        // Сохраняем
         this.saveToStorage();
-        
-        console.log('✅ Игрок успешно добавлен');
+
+        console.log('✅ Игрок успешно добавлен. Всего игроков:', this.players.length);
     }
 
-    animateError(element) {
-        element.style.animation = 'shake 0.5s ease-in-out';
-        setTimeout(() => {
-            element.style.animation = '';
-        }, 500);
-    }
-
-    animatePlayerAddition(player) {
-        const playersList = document.getElementById('playersList');
-        
-        // Убираем empty state если есть
-        const emptyState = playersList.querySelector('.empty-state');
-        if (emptyState) {
-            emptyState.style.animation = 'fadeOut 0.3s ease-out forwards';
-            setTimeout(() => {
-                emptyState.remove();
-            }, 300);
-        }
-        
-        // Создаем временный элемент для анимации
-        const tempElement = document.createElement('div');
-        tempElement.className = `player-item ${player.color} adding`;
-        tempElement.innerHTML = `
-            <div class="player-info">
-                <div class="player-color ${player.color}"></div>
-                <span class="player-name">${player.name}</span>
-            </div>
-            <button class="remove-player" onclick="removePlayer('${player.id}')">×</button>
-        `;
-        
-        playersList.appendChild(tempElement);
-        
-        // Запускаем анимацию
-        setTimeout(() => {
-            tempElement.classList.remove('adding');
-            tempElement.style.animation = 'slideInRight 0.5s ease-out';
-        }, 100);
-    }
-
-    resetForm(nameInput, colorSelect) {
-        // Анимация очистки
-        nameInput.style.transform = 'scale(0.95)';
-        nameInput.style.opacity = '0.7';
-        
-        setTimeout(() => {
-            nameInput.value = '';
-            nameInput.style.borderColor = 'var(--glass-border)';
-            nameInput.style.boxShadow = 'none';
-            nameInput.style.transform = 'scale(1)';
-            nameInput.style.opacity = '1';
-            nameInput.focus();
-        }, 300);
-    }
-
-    // ===== ОБНОВЛЕНИЕ СПИСКА ИГРОКОВ =====
     updatePlayersList() {
         const playersList = document.getElementById('playersList');
         const playerCount = document.getElementById('playerCount');
         
         if (!playersList || !playerCount) {
-            console.error('❌ Не найдены элементы списка игроков');
+            console.error('❌ Элементы списка не найдены');
             return;
         }
-        
-        playerCount.textContent = `${this.players.length} игрок${this.getRussianPlural(this.players.length, '', 'а', 'ов')}`;
-        
+
+        // Обновляем счетчик
+        playerCount.textContent = `${this.players.length} игроков`;
+
+        // Обновляем список
         if (this.players.length === 0) {
             playersList.innerHTML = `
                 <div class="empty-state">
@@ -247,208 +151,70 @@ class ProfessionalTrackGame {
                     <div class="empty-subtext">Добавьте первого игрока чтобы начать</div>
                 </div>
             `;
-            return;
-        }
-        
-        playersList.innerHTML = this.players.map(player => `
-            <div class="player-item ${player.color}">
-                <div class="player-info">
-                    <div class="player-color ${player.color}"></div>
-                    <span class="player-name">${player.name}</span>
+        } else {
+            playersList.innerHTML = this.players.map(player => `
+                <div class="player-item ${player.color}">
+                    <div class="player-info">
+                        <div class="player-color ${player.color}"></div>
+                        <span class="player-name">${player.name}</span>
+                    </div>
+                    <button class="remove-player" onclick="game.removePlayer('${player.id}')">×</button>
                 </div>
-                <button class="remove-player" onclick="removePlayer('${player.id}')">×</button>
-            </div>
-        `).join('');
+            `).join('');
+        }
     }
 
     removePlayer(playerId) {
         console.log('🗑️ Удаление игрока:', playerId);
         
-        const playerIndex = this.players.findIndex(p => p.id === playerId);
-        if (playerIndex === -1) return;
+        this.players = this.players.filter(player => player.id !== playerId);
+        this.updatePlayersList();
+        this.updateStartButton();
+        this.saveToStorage();
         
-        const player = this.players[playerIndex];
-        const playerElement = document.querySelector(`[onclick="removePlayer('${playerId}')"]`)?.closest('.player-item');
-        
-        if (playerElement) {
-            // Анимация удаления
-            playerElement.style.transform = 'translateX(100%)';
-            playerElement.style.opacity = '0';
-            
-            setTimeout(() => {
-                this.players.splice(playerIndex, 1);
-                this.updatePlayersList();
-                this.updateStartButton();
-                this.showNotification(`Игрок "${player.name}" удален`, 'info');
-                this.saveToStorage();
-            }, 400);
-        } else {
-            // Без анимации
-            this.players.splice(playerIndex, 1);
-            this.updatePlayersList();
-            this.updateStartButton();
-            this.saveToStorage();
-        }
-    }
-
-    // ===== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ =====
-    validatePlayerName() {
-        const nameInput = document.getElementById('playerNameInput');
-        if (!nameInput) return;
-        
-        const name = nameInput.value.trim();
-        
-        if (!name) {
-            nameInput.style.borderColor = 'var(--glass-border)';
-            return;
-        }
-        
-        if (name.length < 2) {
-            nameInput.style.borderColor = '#fdcb6e';
-            nameInput.style.boxShadow = '0 0 0 3px rgba(253, 203, 110, 0.1)';
-        } else if (this.players.some(p => p.name.toLowerCase() === name.toLowerCase())) {
-            nameInput.style.borderColor = '#ff7675';
-            nameInput.style.boxShadow = '0 0 0 3px rgba(255, 118, 117, 0.1)';
-        } else {
-            nameInput.style.borderColor = '#00b894';
-            nameInput.style.boxShadow = '0 0 0 3px rgba(0, 184, 148, 0.1)';
-        }
-    }
-
-    debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-
-    generateId() {
-        return 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    }
-
-    showNotification(message, type = 'info') {
-        // Создаем уведомление
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.innerHTML = `
-            <div class="notification-content">
-                <span class="notification-icon">${this.getNotificationIcon(type)}</span>
-                <span class="notification-text">${message}</span>
-            </div>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        // Автоматическое удаление
-        setTimeout(() => {
-            notification.style.animation = 'slideOutRight 0.5s ease-out forwards';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 500);
-        }, 3000);
-    }
-
-    getNotificationIcon(type) {
-        const icons = {
-            success: '✅',
-            error: '❌',
-            warning: '⚠️',
-            info: 'ℹ️'
-        };
-        return icons[type] || 'ℹ️';
+        this.showMessage('Игрок удален', 'info');
     }
 
     updateStartButton() {
         const startBtn = document.getElementById('startGameBtn');
-        if (!startBtn) return;
+        if (startBtn) {
+            startBtn.disabled = this.players.length < 2;
+        }
+    }
+
+    updateUI() {
+        this.updatePlayersList();
+        this.updateStartButton();
+    }
+
+    showMessage(message, type = 'info') {
+        // Простое уведомление
+        console.log(`💬 ${type}: ${message}`);
         
-        const isValid = this.players.length >= GAME_CONFIG.minPlayers;
-        startBtn.disabled = !isValid;
+        // Можно добавить красивый toast позже
+        const notification = document.createElement('div');
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: ${type === 'success' ? '#00b894' : type === 'error' ? '#ff7675' : '#74b9ff'};
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            z-index: 10000;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        `;
+        notification.textContent = message;
+        document.body.appendChild(notification);
         
-        if (isValid) {
-            startBtn.style.opacity = '1';
-            startBtn.style.transform = 'scale(1)';
-        } else {
-            startBtn.style.opacity = '0.7';
-            startBtn.style.transform = 'scale(0.98)';
-        }
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
     }
 
-    // ===== ИНИЦИАЛИЗАЦИЯ TELEGRAM =====
-    initializeTelegram() {
-        if (window.Telegram && window.Telegram.WebApp) {
-            this.tg = window.Telegram.WebApp;
-            this.tg.ready();
-            this.tg.expand();
-            this.tg.enableClosingConfirmation();
-            
-            console.log('✅ Telegram Web App инициализирован');
-        }
-    }
-
-    // ===== СОХРАНЕНИЕ И ЗАГРУЗКА =====
-    saveToStorage() {
-        try {
-            const gameData = {
-                players: this.players,
-                currentPlayerIndex: this.currentPlayerIndex,
-                currentTurn: this.currentTurn,
-                gameState: this.gameState,
-                history: this.history,
-                diceValue: this.diceValue,
-                currentQuest: this.currentQuest,
-                currentCellType: this.currentCellType,
-                saveTime: new Date().toISOString()
-            };
-            
-            localStorage.setItem('professionalTrackGame', JSON.stringify(gameData));
-        } catch (e) {
-            console.warn('⚠️ Не удалось сохранить игру:', e);
-        }
-    }
-
-    loadFromStorage() {
-        try {
-            const saved = localStorage.getItem('professionalTrackGame');
-            if (saved) {
-                const gameData = JSON.parse(saved);
-                
-                this.players = gameData.players || [];
-                this.currentPlayerIndex = gameData.currentPlayerIndex || 0;
-                this.currentTurn = gameData.currentTurn || 1;
-                this.gameState = gameData.gameState || 'setup';
-                
-                this.updatePlayersList();
-                this.updateStartButton();
-                
-                console.log('💾 Игра загружена из сохранения');
-            }
-        } catch (e) {
-            console.error('❌ Ошибка загрузки сохранения:', e);
-        }
-    }
-
-    getRussianPlural(number, one, two, five) {
-        let n = Math.abs(number);
-        n %= 100;
-        if (n >= 5 && n <= 20) return five;
-        n %= 10;
-        if (n === 1) return one;
-        if (n >= 2 && n <= 4) return two;
-        return five;
-    }
-
-    // Остальные методы игры...
     startGame() {
-        if (this.players.length < GAME_CONFIG.minPlayers) {
-            this.showNotification(`Нужно как минимум ${GAME_CONFIG.minPlayers} игрока`, 'warning');
+        if (this.players.length < 2) {
+            this.showMessage('Нужно как минимум 2 игрока', 'error');
             return;
         }
         
@@ -456,58 +222,80 @@ class ProfessionalTrackGame {
         document.getElementById('setupSection').style.display = 'none';
         document.getElementById('gameInterface').style.display = 'block';
         
-        this.showNotification('🎮 Игра началась!', 'success');
+        this.showMessage('Игра началась! 🎮', 'success');
     }
 
-    // ... остальные методы
+    rollDice() {
+        this.showMessage('Бросок кубика! 🎲', 'info');
+        // Реализуем позже
+    }
+
+    nextPlayer() {
+        this.showMessage('Следующий игрок', 'info');
+        // Реализуем позже
+    }
+
+    completeQuest(success) {
+        this.showMessage(success ? 'Задание выполнено! ✅' : 'Задание провалено ❌', success ? 'success' : 'error');
+        // Реализуем позже
+    }
+
+    saveToStorage() {
+        try {
+            const data = {
+                players: this.players,
+                gameState: this.gameState
+            };
+            localStorage.setItem('professionalTrackGame', JSON.stringify(data));
+        } catch (e) {
+            console.warn('Не удалось сохранить игру');
+        }
+    }
+
+    loadFromStorage() {
+        try {
+            const saved = localStorage.getItem('professionalTrackGame');
+            if (saved) {
+                const data = JSON.parse(saved);
+                this.players = data.players || [];
+                this.gameState = data.gameState || 'setup';
+                console.log('💾 Загружено сохранение:', this.players.length, 'игроков');
+            }
+        } catch (e) {
+            console.warn('Ошибка загрузки сохранения');
+        }
+    }
 }
 
-// ===== ГЛОБАЛЬНЫЕ ФУНКЦИИ =====
+// ===== ГЛОБАЛЬНАЯ ИНИЦИАЛИЗАЦИЯ =====
 let game;
 
+// Ждем полной загрузки DOM
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Загрузка игры...');
+    console.log('🏁 DOM загружен, запускаем игру...');
     
     try {
         game = new ProfessionalTrackGame();
-        console.log('✅ Игра успешно загружена');
+        console.log('🎉 Игра успешно запущена!');
+        console.log('📍 game доступен глобально:', typeof game !== 'undefined');
         
-        // Тестируем доступность элементов
-        setTimeout(() => {
-            const testElements = [
-                'addPlayerBtn', 'playerNameInput', 'playerColorSelect', 
-                'playersList', 'startGameBtn'
-            ];
-            
-            testElements.forEach(id => {
-                const element = document.getElementById(id);
-                console.log(`🔍 ${id}:`, element ? '✅ Найден' : '❌ Не найден');
-            });
-        }, 100);
+        // Тестируем доступ к кнопке через глобальную переменную
+        window.testGame = function() {
+            console.log('🧪 Тест: game.addPlayer()', typeof game.addPlayer);
+            game.addPlayer();
+        };
         
     } catch (error) {
-        console.error('💥 Критическая ошибка при загрузке игры:', error);
-        alert('Ошибка загрузки игры. Пожалуйста, обновите страницу.');
+        console.error('💥 Критическая ошибка:', error);
+        alert('Ошибка загрузки игры: ' + error.message);
     }
 });
 
-// Глобальные функции для HTML
-function removePlayer(playerId) {
-    if (game && typeof game.removePlayer === 'function') {
-        game.removePlayer(playerId);
-    } else {
-        console.error('❌ game.removePlayer не доступна');
-    }
-}
+// Делаем game глобально доступным для HTML onclick
+window.game = null;
 
-function selectShopCategory(categoryId) {
-    if (game) game.selectShopCategory(categoryId);
-}
-
-function buyItem(categoryId, itemId) {
-    if (game) game.buyItem(categoryId, itemId);
-}
-
-function showItemInfo(categoryId, itemId) {
-    if (game) game.showItemInfo(categoryId, itemId);
-}
+// Обновляем глобальную переменную после загрузки
+setTimeout(() => {
+    window.game = game;
+    console.log('🌐 game установлен глобально:', !!window.game);
+}, 100);
