@@ -334,6 +334,38 @@
         </div>
     </div>
 
+    <!-- Модальное окно информации о товаре -->
+    <div class="item-modal" id="itemModal" style="display: none;">
+        <div class="modal-content">
+            <button class="modal-close" id="modalCloseBtn">✕</button>
+            <div class="modal-header">
+                <div class="modal-icon" id="modalItemIcon">🎁</div>
+                <div class="modal-title" id="modalItemName">Название товара</div>
+            </div>
+            <div class="modal-description" id="modalItemDescription">Описание товара</div>
+            <div class="modal-details">
+                <div class="detail-item">
+                    <span class="detail-label">Цена:</span>
+                    <span class="detail-value" id="modalItemPrice">0 ⭐</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Тип:</span>
+                    <span class="detail-value" id="modalItemType">-</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Эффект:</span>
+                    <span class="detail-value" id="modalItemEffect">-</span>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="buy-btn" id="modalBuyBtn">
+                    <span class="btn-icon">🛒</span>
+                    Купить
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="data.js"></script>
     <script src="game.js"></script>
 </body>
