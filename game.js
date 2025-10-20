@@ -15,126 +15,127 @@ class ProfessionalTrackGame {
         this.initializeEventListeners();
         this.initializeTelegram();
         this.loadFromStorage();
-        this.setupPremiumFeatures();
     }
 
-    // ===== PREMIUM INITIALIZATION =====
-    initializeTelegram() {
-        if (window.Telegram && window.Telegram.WebApp) {
-            this.tg = window.Telegram.WebApp;
-            this.tg.ready();
-            this.tg.expand();
-            this.tg.enableClosingConfirmation();
-            
-            const user = this.tg.initDataUnsafe?.user;
-            if (user) {
-                this.telegramUser = user;
-                console.log('🎯 Premium User:', user);
-            }
-            
-            this.tg.setHeaderColor('#6c5ce7');
-            this.tg.setBackgroundColor('#0a0a1a');
-        }
-    }
-
-    setupPremiumFeatures() {
-        // Добавляем премиум функционал
-        this.setupSmoothAnimations();
-        this.setupHapticFeedback();
-        this.setupAudioFeedback();
-    }
-
-    setupSmoothAnimations() {
-        // Включаем плавные анимации для всех элементов
-        document.documentElement.style.setProperty('--transition', 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)');
-    }
-
-    setupHapticFeedback() {
-        // Вибрационная отдача для мобильных устройств
-        this.hapticAvailable = 'vibrate' in navigator;
-    }
-
-    setupAudioFeedback() {
-        // Простая аудио-система для премиум ощущений
-        this.audioContext = null;
-        try {
-            this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        } catch (e) {
-            console.log('Audio context not supported');
-        }
-    }
-
-    // ===== PREMIUM EVENT LISTENERS =====
+    // ===== ИСПРАВЛЕННАЯ ИНИЦИАЛИЗАЦИЯ =====
     initializeEventListeners() {
-        // Кнопка добавления игрока с улучшенной обработкой
-        document.getElementById('addPlayerBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.addPlayer();
-        });
+        console.log('🔄 Инициализация обработчиков событий...');
         
-        // Улучшенный ввод с дебаунсингом
-        const nameInput = document.getElementById('playerNameInput');
-        nameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
+        // Основная кнопка добавления игрока
+        const addPlayerBtn = document.getElementById('addPlayerBtn');
+        if (addPlayerBtn) {
+            addPlayerBtn.addEventListener('click', (e) => {
                 e.preventDefault();
+                console.log('🎯 Кнопка добавления нажата');
                 this.addPlayer();
-            }
-        });
+            });
+        } else {
+            console.error('❌ Кнопка addPlayerBtn не найдена');
+        }
 
-        // Плавная валидация в реальном времени
-        nameInput.addEventListener('input', this.debounce(() => {
-            this.validatePlayerName();
-        }, 300));
+        // Ввод по Enter
+        const playerNameInput = document.getElementById('playerNameInput');
+        if (playerNameInput) {
+            playerNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    console.log('⌨️ Enter нажат');
+                    this.addPlayer();
+                }
+            });
 
-        // Остальные обработчики
-        document.getElementById('startGameBtn').addEventListener('click', () => this.startGame());
-        document.getElementById('rollBtn').addEventListener('click', () => this.rollDice());
-        document.getElementById('nextPlayerBtn').addEventListener('click', () => this.nextPlayer());
-        document.getElementById('successBtn').addEventListener('click', () => this.completeQuest(true));
-        document.getElementById('failBtn').addEventListener('click', () => this.completeQuest(false));
-        document.getElementById('shopBtn').addEventListener('click', () => this.openShop());
-        document.getElementById('closeShopBtn').addEventListener('click', () => this.closeShop());
-        document.getElementById('endGameBtn').addEventListener('click', () => this.endGame());
-        document.getElementById('newGameBtn').addEventListener('click', () => this.newGame());
+            // Валидация в реальном времени
+            playerNameInput.addEventListener('input', this.debounce(() => {
+                this.validatePlayerName();
+            }, 300));
+        }
+
+        // Остальные кнопки
+        this.setupButton('startGameBtn', () => this.startGame());
+        this.setupButton('rollBtn', () => this.rollDice());
+        this.setupButton('nextPlayerBtn', () => this.nextPlayer());
+        this.setupButton('successBtn', () => this.completeQuest(true));
+        this.setupButton('failBtn', () => this.completeQuest(false));
+        this.setupButton('shopBtn', () => this.openShop());
+        this.setupButton('closeShopBtn', () => this.closeShop());
+        this.setupButton('endGameBtn', () => this.endGame());
+        this.setupButton('newGameBtn', () => this.newGame());
 
         // Модальные окна
-        document.getElementById('modalCloseBtn').addEventListener('click', () => this.closeItemModal());
-        document.getElementById('itemModal').addEventListener('click', (e) => {
-            if (e.target.id === 'itemModal') this.closeItemModal();
-        });
+        this.setupButton('modalCloseBtn', () => this.closeItemModal());
+        
+        const itemModal = document.getElementById('itemModal');
+        if (itemModal) {
+            itemModal.addEventListener('click', (e) => {
+                if (e.target.id === 'itemModal') this.closeItemModal();
+            });
+        }
+
+        console.log('✅ Все обработчики инициализированы');
     }
 
-    // ===== PREMIUM PLAYER MANAGEMENT =====
+    setupButton(elementId, handler) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            element.addEventListener('click', handler);
+        } else {
+            console.warn(`⚠️ Элемент ${elementId} не найден`);
+        }
+    }
+
+    // ===== ИСПРАВЛЕННЫЙ МЕТОД ДОБАВЛЕНИЯ ИГРОКА =====
     addPlayer() {
+        console.log('👤 Начало добавления игрока...');
+        
         const nameInput = document.getElementById('playerNameInput');
         const colorSelect = document.getElementById('playerColorSelect');
+        
+        if (!nameInput || !colorSelect) {
+            console.error('❌ Не найдены элементы формы');
+            this.showNotification('Ошибка формы', 'error');
+            return;
+        }
         
         const name = nameInput.value.trim();
         const color = colorSelect.value;
         
-        // Премиум валидация
-        if (!this.validatePlayerName(name)) return;
+        console.log(`📝 Данные: имя="${name}", цвет="${color}"`);
         
+        // Валидация имени
+        if (!name) {
+            this.showNotification('Введите имя игрока', 'error');
+            this.animateError(nameInput);
+            return;
+        }
+        
+        if (name.length < 2) {
+            this.showNotification('Имя должно содержать минимум 2 символа', 'warning');
+            this.animateError(nameInput);
+            return;
+        }
+        
+        if (name.length > 20) {
+            this.showNotification('Имя не должно превышать 20 символов', 'warning');
+            this.animateError(nameInput);
+            return;
+        }
+        
+        // Проверка лимита игроков
         if (this.players.length >= GAME_CONFIG.maxPlayers) {
-            this.showPremiumNotification(`Достигнут лимит в ${GAME_CONFIG.maxPlayers} игроков`, 'warning');
-            this.playHapticFeedback('error');
+            this.showNotification(`Максимум ${GAME_CONFIG.maxPlayers} игроков`, 'warning');
             return;
         }
         
-        // Проверка уникальности с учетом регистра
-        const nameExists = this.players.some(player => 
-            player.name.toLowerCase() === name.toLowerCase()
-        );
-        
-        if (nameExists) {
-            this.showPremiumNotification('Игрок с таким именем уже существует', 'error');
-            this.playHapticFeedback('error');
+        // Проверка уникальности имени
+        if (this.players.some(player => player.name.toLowerCase() === name.toLowerCase())) {
+            this.showNotification('Игрок с таким именем уже существует', 'error');
+            this.animateError(nameInput);
             return;
         }
         
-        // Создание премиум игрока
+        // Создание игрока
         const player = {
-            id: this.generatePremiumId(),
+            id: this.generateId(),
             name: name,
             color: color,
             reputation: GAME_CONFIG.startingReputation,
@@ -145,55 +146,53 @@ class ProfessionalTrackGame {
             turns: 0,
             completedQuests: 0,
             failedQuests: 0,
-            maxSkills: 2,
-            joinTime: new Date().toISOString(),
-            achievements: []
+            maxSkills: 2
         };
+        
+        console.log('🎮 Создан новый игрок:', player);
         
         // Анимация добавления
         this.animatePlayerAddition(player);
         
+        // Добавление в массив
         this.players.push(player);
+        
+        // Обновление интерфейса
         this.updatePlayersList();
         this.updateStartButton();
         
-        // Премиум сброс формы
-        this.resetFormWithAnimation(nameInput, colorSelect);
+        // Сброс формы
+        this.resetForm(nameInput, colorSelect);
         
-        this.showPremiumNotification(`🎉 Игрок ${name} добавлен!`, 'success');
-        this.playHapticFeedback('success');
+        // Уведомление
+        this.showNotification(`🎉 Игрок "${name}" добавлен!`, 'success');
+        
+        // Сохранение
         this.saveToStorage();
+        
+        console.log('✅ Игрок успешно добавлен');
     }
 
-    validatePlayerName(name = '') {
-        const nameInput = document.getElementById('playerNameInput');
-        
-        if (!name.trim()) {
-            nameInput.style.borderColor = '#ff7675';
-            nameInput.style.boxShadow = '0 0 0 3px rgba(255, 118, 117, 0.1)';
-            return false;
-        }
-        
-        if (name.length < 2) {
-            nameInput.style.borderColor = '#fdcb6e';
-            nameInput.style.boxShadow = '0 0 0 3px rgba(253, 203, 110, 0.1)';
-            return false;
-        }
-        
-        if (name.length > 20) {
-            nameInput.style.borderColor = '#fdcb6e';
-            nameInput.style.boxShadow = '0 0 0 3px rgba(253, 203, 110, 0.1)';
-            return false;
-        }
-        
-        // Валидное имя
-        nameInput.style.borderColor = '#00b894';
-        nameInput.style.boxShadow = '0 0 0 3px rgba(0, 184, 148, 0.1)';
-        return true;
+    animateError(element) {
+        element.style.animation = 'shake 0.5s ease-in-out';
+        setTimeout(() => {
+            element.style.animation = '';
+        }, 500);
     }
 
     animatePlayerAddition(player) {
         const playersList = document.getElementById('playersList');
+        
+        // Убираем empty state если есть
+        const emptyState = playersList.querySelector('.empty-state');
+        if (emptyState) {
+            emptyState.style.animation = 'fadeOut 0.3s ease-out forwards';
+            setTimeout(() => {
+                emptyState.remove();
+            }, 300);
+        }
+        
+        // Создаем временный элемент для анимации
         const tempElement = document.createElement('div');
         tempElement.className = `player-item ${player.color} adding`;
         tempElement.innerHTML = `
@@ -201,19 +200,19 @@ class ProfessionalTrackGame {
                 <div class="player-color ${player.color}"></div>
                 <span class="player-name">${player.name}</span>
             </div>
-            <div class="adding-spinner">⏳</div>
+            <button class="remove-player" onclick="removePlayer('${player.id}')">×</button>
         `;
         
         playersList.appendChild(tempElement);
         
-        // Анимация появления
+        // Запускаем анимацию
         setTimeout(() => {
             tempElement.classList.remove('adding');
-            tempElement.classList.add('added');
+            tempElement.style.animation = 'slideInRight 0.5s ease-out';
         }, 100);
     }
 
-    resetFormWithAnimation(nameInput, colorSelect) {
+    resetForm(nameInput, colorSelect) {
         // Анимация очистки
         nameInput.style.transform = 'scale(0.95)';
         nameInput.style.opacity = '0.7';
@@ -228,350 +227,15 @@ class ProfessionalTrackGame {
         }, 300);
     }
 
-    removePlayer(playerId) {
-        const playerIndex = this.players.findIndex(p => p.id === playerId);
-        if (playerIndex === -1) return;
-        
-        const player = this.players[playerIndex];
-        
-        // Анимация удаления
-        const playerElement = document.querySelector(`[onclick="game.removePlayer('${playerId}')"]`).closest('.player-item');
-        if (playerElement) {
-            playerElement.style.transform = 'translateX(100%)';
-            playerElement.style.opacity = '0';
-            
-            setTimeout(() => {
-                this.players.splice(playerIndex, 1);
-                this.updatePlayersList();
-                this.updateStartButton();
-                this.showPremiumNotification(`Игрок ${player.name} удален`, 'info');
-                this.saveToStorage();
-            }, 400);
-        }
-    }
-
-    // ===== PREMIUM DICE ROLLING =====
-    async rollDice() {
-        if (this.isRolling) return;
-        
-        const dice = document.getElementById('dice');
-        const rollBtn = document.getElementById('rollBtn');
-        const diceNumber = document.getElementById('diceNumber');
-        
-        this.isRolling = true;
-        rollBtn.disabled = true;
-        this.playHapticFeedback('medium');
-        
-        // Премиум анимация броска
-        dice.classList.add('rolling');
-        
-        // Интенсивная анимация с множеством вращений
-        const rolls = 15;
-        for (let i = 0; i < rolls; i++) {
-            const randomValue = Math.floor(Math.random() * 6) + 1;
-            diceNumber.textContent = DICE_SYMBOLS[randomValue - 1];
-            dice.style.transform = `rotateX(${Math.random() * 360}deg) rotateY(${Math.random() * 360}deg) scale(${1 + Math.random() * 0.2})`;
-            
-            await this.sleep(50 + (i * 5)); // Ускоряемся к концу
-        }
-        
-        // Финальное значение
-        this.diceValue = Math.floor(Math.random() * 6) + 1;
-        diceNumber.textContent = DICE_SYMBOLS[this.diceValue - 1];
-        
-        // Завершение с стилем
-        setTimeout(() => {
-            dice.classList.remove('rolling');
-            dice.style.transform = 'rotateX(0) rotateY(0) scale(1)';
-            rollBtn.disabled = false;
-            this.isRolling = false;
-            
-            this.determineCellType();
-            this.showDiceResult();
-            this.playHapticFeedback('success');
-            
-        }, 500);
-    }
-
-    showDiceResult() {
-        const diceResult = document.getElementById('diceResult');
-        diceResult.innerHTML = `
-            <span class="result-icon">🎯</span>
-            <span class="result-text">Результат: ${this.diceValue}</span>
-            <span class="result-badge">${this.getDiceResultText()}</span>
-        `;
-        
-        diceResult.style.animation = 'none';
-        setTimeout(() => {
-            diceResult.style.animation = 'fadeIn 0.5s ease-out';
-        }, 10);
-        
-        this.addHistoryMessage(
-            `${this.getCurrentPlayer().name} выбросил ${this.diceValue}`
-        );
-    }
-
-    getDiceResultText() {
-        const texts = {
-            1: 'Старт!', 2: 'Хорошо!', 3: 'Отлично!', 
-            4: 'Великолепно!', 5: 'Потрясающе!', 6: 'Идеально!'
-        };
-        return texts[this.diceValue] || 'Удача!';
-    }
-
-    // ===== PREMIUM GAME FLOW =====
-    startGame() {
-        if (this.players.length < GAME_CONFIG.minPlayers) {
-            this.showPremiumNotification(`Нужно как минимум ${GAME_CONFIG.minPlayers} игрока`, 'warning');
-            return;
-        }
-        
-        // Анимация перехода
-        this.animateScreenTransition('setupSection', 'gameInterface', () => {
-            this.gameState = 'playing';
-            this.currentPlayerIndex = 0;
-            this.currentTurn = 1;
-            this.history = [];
-            
-            this.updateGameInterface();
-            this.addHistoryMessage('🎮 Игра началась! Удачи всем игрокам!');
-            
-            this.showPremiumNotification('Игра началась! 🚀', 'success');
-            this.playHapticFeedback('heavy');
-            this.saveToStorage();
-        });
-    }
-
-    animateScreenTransition(hideId, showId, callback) {
-        const hideElement = document.getElementById(hideId);
-        const showElement = document.getElementById(showId);
-        
-        hideElement.style.animation = 'fadeOut 0.5s ease-out forwards';
-        
-        setTimeout(() => {
-            hideElement.style.display = 'none';
-            showElement.style.display = 'block';
-            showElement.style.animation = 'fadeInUp 0.6s ease-out forwards';
-            
-            if (callback) setTimeout(callback, 300);
-        }, 300);
-    }
-
-    completeQuest(success) {
-        const player = this.getCurrentPlayer();
-        const questCard = document.querySelector('.quest-card');
-        
-        // Анимация выполнения
-        questCard.style.transform = 'scale(0.95)';
-        
-        setTimeout(() => {
-            if (success) {
-                const reputationGain = this.calculateReputationGain();
-                player.reputation += reputationGain;
-                player.completedQuests++;
-                
-                this.showPremiumNotification(
-                    `✅ Успех! +${reputationGain} репутации!`, 
-                    'success'
-                );
-                this.animateReputationGain(reputationGain);
-                
-                this.addHistoryMessage(
-                    `${player.name} успешно выполнил задание и получил +${reputationGain} репутации`
-                );
-            } else {
-                player.reputation = Math.max(0, player.reputation - 1);
-                player.failedQuests++;
-                
-                this.showPremiumNotification('❌ Задание не выполнено', 'error');
-                this.addHistoryMessage(`${player.name} не справился с заданием`);
-            }
-            
-            this.checkLevelUp(player);
-            questCard.style.transform = 'scale(1)';
-            document.getElementById('completionButtons').style.display = 'none';
-            this.updateGameInterface();
-            this.saveToStorage();
-            
-        }, 300);
-    }
-
-    animateReputationGain(amount) {
-        const reputationElement = document.getElementById('currentPlayerReputation');
-        const originalRep = parseInt(reputationElement.textContent);
-        const newRep = originalRep + amount;
-        
-        let current = originalRep;
-        const increment = () => {
-            if (current < newRep) {
-                current++;
-                reputationElement.textContent = current;
-                reputationElement.style.transform = 'scale(1.2)';
-                setTimeout(() => {
-                    reputationElement.style.transform = 'scale(1)';
-                }, 150);
-                setTimeout(increment, 100);
-            }
-        };
-        increment();
-    }
-
-    // ===== PREMIUM UTILITIES =====
-    debounce(func, wait) {
-        let timeout;
-        return function executedFunction(...args) {
-            const later = () => {
-                clearTimeout(timeout);
-                func(...args);
-            };
-            clearTimeout(timeout);
-            timeout = setTimeout(later, wait);
-        };
-    }
-
-    generatePremiumId() {
-        return `player_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    }
-
-    playHapticFeedback(type) {
-        if (!this.hapticAvailable || !this.tg?.isVersionAtLeast('6.1')) return;
-        
-        const patterns = {
-            light: [50],
-            medium: [100],
-            heavy: [200],
-            success: [50, 50, 50],
-            error: [150, 50, 150]
-        };
-        
-        if (patterns[type]) {
-            navigator.vibrate(patterns[type]);
-        }
-    }
-
-    showPremiumNotification(message, type = 'info') {
-        const notification = document.createElement('div');
-        notification.className = `notification ${type}`;
-        notification.innerHTML = `
-            <div class="notification-content">
-                <span class="notification-icon">${this.getNotificationIcon(type)}</span>
-                <span class="notification-text">${message}</span>
-            </div>
-        `;
-        
-        document.body.appendChild(notification);
-        
-        // Автоматическое удаление
-        setTimeout(() => {
-            notification.style.animation = 'slideOutRight 0.5s ease-out forwards';
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 500);
-        }, 4000);
-    }
-
-    getNotificationIcon(type) {
-        const icons = {
-            success: '✅',
-            error: '❌',
-            warning: '⚠️',
-            info: 'ℹ️'
-        };
-        return icons[type] || 'ℹ️';
-    }
-
-    getCurrentPlayer() {
-        return this.players[this.currentPlayerIndex];
-    }
-
-    sleep(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
-    // ===== PREMIUM PERSISTENCE =====
-    saveToStorage() {
-        const gameData = {
-            players: this.players,
-            currentPlayerIndex: this.currentPlayerIndex,
-            currentTurn: this.currentTurn,
-            gameState: this.gameState,
-            history: this.history,
-            diceValue: this.diceValue,
-            currentQuest: this.currentQuest,
-            currentCellType: this.currentCellType,
-            saveTime: new Date().toISOString(),
-            version: 'premium_1.0'
-        };
-        
-        try {
-            localStorage.setItem('professionalTrackGame', JSON.stringify(gameData));
-        } catch (e) {
-            console.warn('Could not save game data:', e);
-        }
-    }
-
-    loadFromStorage() {
-        const saved = localStorage.getItem('professionalTrackGame');
-        if (saved) {
-            try {
-                const gameData = JSON.parse(saved);
-                
-                // Миграция данных если нужно
-                if (this.migrateSaveData(gameData)) {
-                    this.players = gameData.players || [];
-                    this.currentPlayerIndex = gameData.currentPlayerIndex || 0;
-                    this.currentTurn = gameData.currentTurn || 1;
-                    this.gameState = gameData.gameState || 'setup';
-                    this.history = gameData.history || [];
-                    this.diceValue = gameData.diceValue || 0;
-                    this.currentQuest = gameData.currentQuest || null;
-                    this.currentCellType = gameData.currentCellType || null;
-                    
-                    this.restoreGameState();
-                    console.log('🎮 Premium game loaded successfully');
-                }
-                
-            } catch (e) {
-                console.error('Error loading saved game:', e);
-                this.showPremiumNotification('Ошибка загрузки сохранения', 'error');
-            }
-        }
-    }
-
-    migrateSaveData(gameData) {
-        // Миграция старых сохранений
-        if (!gameData.version) {
-            // Конвертация из старого формата
-            gameData.version = 'premium_1.0';
-        }
-        return true;
-    }
-
-    restoreGameState() {
-        switch (this.gameState) {
-            case 'playing':
-                document.getElementById('setupSection').style.display = 'none';
-                document.getElementById('gameInterface').style.display = 'block';
-                this.updateGameInterface();
-                break;
-            case 'ended':
-                document.getElementById('setupSection').style.display = 'none';
-                document.getElementById('gameInterface').style.display = 'none';
-                document.getElementById('resultsSection').style.display = 'block';
-                this.showResults();
-                break;
-            default:
-                this.updatePlayersList();
-                this.updateStartButton();
-        }
-    }
-
-    // Остальные методы остаются премиум-версиями базовых функций
+    // ===== ОБНОВЛЕНИЕ СПИСКА ИГРОКОВ =====
     updatePlayersList() {
         const playersList = document.getElementById('playersList');
         const playerCount = document.getElementById('playerCount');
+        
+        if (!playersList || !playerCount) {
+            console.error('❌ Не найдены элементы списка игроков');
+            return;
+        }
         
         playerCount.textContent = `${this.players.length} игрок${this.getRussianPlural(this.players.length, '', 'а', 'ов')}`;
         
@@ -592,60 +256,184 @@ class ProfessionalTrackGame {
                     <div class="player-color ${player.color}"></div>
                     <span class="player-name">${player.name}</span>
                 </div>
-                <button class="remove-player" onclick="game.removePlayer('${player.id}')">×</button>
+                <button class="remove-player" onclick="removePlayer('${player.id}')">×</button>
             </div>
         `).join('');
     }
 
+    removePlayer(playerId) {
+        console.log('🗑️ Удаление игрока:', playerId);
+        
+        const playerIndex = this.players.findIndex(p => p.id === playerId);
+        if (playerIndex === -1) return;
+        
+        const player = this.players[playerIndex];
+        const playerElement = document.querySelector(`[onclick="removePlayer('${playerId}')"]`)?.closest('.player-item');
+        
+        if (playerElement) {
+            // Анимация удаления
+            playerElement.style.transform = 'translateX(100%)';
+            playerElement.style.opacity = '0';
+            
+            setTimeout(() => {
+                this.players.splice(playerIndex, 1);
+                this.updatePlayersList();
+                this.updateStartButton();
+                this.showNotification(`Игрок "${player.name}" удален`, 'info');
+                this.saveToStorage();
+            }, 400);
+        } else {
+            // Без анимации
+            this.players.splice(playerIndex, 1);
+            this.updatePlayersList();
+            this.updateStartButton();
+            this.saveToStorage();
+        }
+    }
+
+    // ===== ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ =====
+    validatePlayerName() {
+        const nameInput = document.getElementById('playerNameInput');
+        if (!nameInput) return;
+        
+        const name = nameInput.value.trim();
+        
+        if (!name) {
+            nameInput.style.borderColor = 'var(--glass-border)';
+            return;
+        }
+        
+        if (name.length < 2) {
+            nameInput.style.borderColor = '#fdcb6e';
+            nameInput.style.boxShadow = '0 0 0 3px rgba(253, 203, 110, 0.1)';
+        } else if (this.players.some(p => p.name.toLowerCase() === name.toLowerCase())) {
+            nameInput.style.borderColor = '#ff7675';
+            nameInput.style.boxShadow = '0 0 0 3px rgba(255, 118, 117, 0.1)';
+        } else {
+            nameInput.style.borderColor = '#00b894';
+            nameInput.style.boxShadow = '0 0 0 3px rgba(0, 184, 148, 0.1)';
+        }
+    }
+
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+
+    generateId() {
+        return 'player_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    }
+
+    showNotification(message, type = 'info') {
+        // Создаем уведомление
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`;
+        notification.innerHTML = `
+            <div class="notification-content">
+                <span class="notification-icon">${this.getNotificationIcon(type)}</span>
+                <span class="notification-text">${message}</span>
+            </div>
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Автоматическое удаление
+        setTimeout(() => {
+            notification.style.animation = 'slideOutRight 0.5s ease-out forwards';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 500);
+        }, 3000);
+    }
+
+    getNotificationIcon(type) {
+        const icons = {
+            success: '✅',
+            error: '❌',
+            warning: '⚠️',
+            info: 'ℹ️'
+        };
+        return icons[type] || 'ℹ️';
+    }
+
     updateStartButton() {
         const startBtn = document.getElementById('startGameBtn');
+        if (!startBtn) return;
+        
         const isValid = this.players.length >= GAME_CONFIG.minPlayers;
         startBtn.disabled = !isValid;
+        
+        if (isValid) {
+            startBtn.style.opacity = '1';
+            startBtn.style.transform = 'scale(1)';
+        } else {
+            startBtn.style.opacity = '0.7';
+            startBtn.style.transform = 'scale(0.98)';
+        }
     }
 
-    determineCellType() {
-        const types = ['green', 'green', 'blue', 'blue', 'yellow', 'purple'];
-        this.currentCellType = types[this.diceValue - 1];
-        this.showQuest(this.currentCellType);
-    }
-
-    showQuest(cellType) {
-        // ... премиум реализация показа заданий
-        const quests = QUESTS[cellType];
-        const randomQuest = quests[Math.floor(Math.random() * quests.length)];
-        this.currentQuest = randomQuest;
-        
-        // Анимированное обновление интерфейса
-        this.animateQuestDisplay(randomQuest, cellType);
-    }
-
-    animateQuestDisplay(quest, cellType) {
-        const cellInfo = CELL_TYPES[cellType];
-        const cellDisplay = document.getElementById('cellDisplay');
-        
-        // Анимация появления
-        cellDisplay.style.animation = 'fadeOut 0.3s ease-out forwards';
-        
-        setTimeout(() => {
-            cellDisplay.className = `cell-display ${cellInfo.colorClass}`;
-            document.getElementById('cellIcon').textContent = cellInfo.emoji;
-            document.getElementById('cellType').textContent = cellInfo.name;
-            document.getElementById('cellDescription').textContent = cellInfo.description;
+    // ===== ИНИЦИАЛИЗАЦИЯ TELEGRAM =====
+    initializeTelegram() {
+        if (window.Telegram && window.Telegram.WebApp) {
+            this.tg = window.Telegram.WebApp;
+            this.tg.ready();
+            this.tg.expand();
+            this.tg.enableClosingConfirmation();
             
-            document.getElementById('currentQuest').textContent = quest.description;
-            document.getElementById('instructionsText').innerHTML = quest.instructions
-                .map(inst => `<div class="instruction-item">${inst}</div>`)
-                .join('');
-            document.getElementById('rewardsText').innerHTML = quest.rewards
-                .map(reward => `<div class="reward-item">${reward}</div>`)
-                .join('');
-                
-            cellDisplay.style.animation = 'fadeIn 0.3s ease-out forwards';
-            document.getElementById('completionButtons').style.display = 'grid';
-        }, 300);
+            console.log('✅ Telegram Web App инициализирован');
+        }
     }
 
-    // ... остальные методы с премиум улучшениями
+    // ===== СОХРАНЕНИЕ И ЗАГРУЗКА =====
+    saveToStorage() {
+        try {
+            const gameData = {
+                players: this.players,
+                currentPlayerIndex: this.currentPlayerIndex,
+                currentTurn: this.currentTurn,
+                gameState: this.gameState,
+                history: this.history,
+                diceValue: this.diceValue,
+                currentQuest: this.currentQuest,
+                currentCellType: this.currentCellType,
+                saveTime: new Date().toISOString()
+            };
+            
+            localStorage.setItem('professionalTrackGame', JSON.stringify(gameData));
+        } catch (e) {
+            console.warn('⚠️ Не удалось сохранить игру:', e);
+        }
+    }
+
+    loadFromStorage() {
+        try {
+            const saved = localStorage.getItem('professionalTrackGame');
+            if (saved) {
+                const gameData = JSON.parse(saved);
+                
+                this.players = gameData.players || [];
+                this.currentPlayerIndex = gameData.currentPlayerIndex || 0;
+                this.currentTurn = gameData.currentTurn || 1;
+                this.gameState = gameData.gameState || 'setup';
+                
+                this.updatePlayersList();
+                this.updateStartButton();
+                
+                console.log('💾 Игра загружена из сохранения');
+            }
+        } catch (e) {
+            console.error('❌ Ошибка загрузки сохранения:', e);
+        }
+    }
 
     getRussianPlural(number, one, two, five) {
         let n = Math.abs(number);
@@ -656,27 +444,60 @@ class ProfessionalTrackGame {
         if (n >= 2 && n <= 4) return two;
         return five;
     }
+
+    // Остальные методы игры...
+    startGame() {
+        if (this.players.length < GAME_CONFIG.minPlayers) {
+            this.showNotification(`Нужно как минимум ${GAME_CONFIG.minPlayers} игрока`, 'warning');
+            return;
+        }
+        
+        this.gameState = 'playing';
+        document.getElementById('setupSection').style.display = 'none';
+        document.getElementById('gameInterface').style.display = 'block';
+        
+        this.showNotification('🎮 Игра началась!', 'success');
+    }
+
+    // ... остальные методы
 }
 
-// ===== PREMIUM INITIALIZATION =====
+// ===== ГЛОБАЛЬНЫЕ ФУНКЦИИ =====
 let game;
 
-document.addEventListener('DOMContentLoaded', () => {
-    // Показываем загрузочный экран
-    document.body.style.opacity = '0';
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Загрузка игры...');
     
-    setTimeout(() => {
+    try {
         game = new ProfessionalTrackGame();
-        document.body.style.opacity = '1';
-        document.body.style.transition = 'opacity 0.5s ease-out';
+        console.log('✅ Игра успешно загружена');
         
-        console.log('🎮 Premium Professional Track Game initialized');
-    }, 100);
+        // Тестируем доступность элементов
+        setTimeout(() => {
+            const testElements = [
+                'addPlayerBtn', 'playerNameInput', 'playerColorSelect', 
+                'playersList', 'startGameBtn'
+            ];
+            
+            testElements.forEach(id => {
+                const element = document.getElementById(id);
+                console.log(`🔍 ${id}:`, element ? '✅ Найден' : '❌ Не найден');
+            });
+        }, 100);
+        
+    } catch (error) {
+        console.error('💥 Критическая ошибка при загрузке игры:', error);
+        alert('Ошибка загрузки игры. Пожалуйста, обновите страницу.');
+    }
 });
 
 // Глобальные функции для HTML
 function removePlayer(playerId) {
-    if (game) game.removePlayer(playerId);
+    if (game && typeof game.removePlayer === 'function') {
+        game.removePlayer(playerId);
+    } else {
+        console.error('❌ game.removePlayer не доступна');
+    }
 }
 
 function selectShopCategory(categoryId) {
